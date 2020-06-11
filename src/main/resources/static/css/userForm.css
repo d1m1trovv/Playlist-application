@@ -1,0 +1,68 @@
+.container {
+    width: 300px;
+    padding: 5% 0 0;
+    margin: auto;
+}
+
+.form {
+    position: relative;
+    background-color: rgba(255,255,255,0.1);
+    width: 400px;
+    border-radius: 12px;
+    margin: 0 auto 400px;
+    padding: 45px;
+    text-align: center;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+    opacity: 80%;
+}
+
+.main-text {
+    font-weight: 100;
+    color: #333;
+}
+
+/*styling the inputs*/
+.form input {
+    width: 100%;
+    height: auto;
+    padding: 15px;
+    outline: 0;
+    border-radius: 12px;
+    background-color: rgba(255,255,255,0.8);
+    text-decoration-color: #FFFFFF;
+    font-family: "Comfortaa", cursive;
+    box-sizing: border-box;
+    font-size: 14px;
+    color:#333;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+
+}
+
+/*giving the submit button some awsome styles*/
+.form button {
+    font-family: "Comfortaa", cursive;
+    text-transform: uppercase;
+    outline: 0;
+    background: -webkit-linear-gradient(right, #840073, #c106ce);
+    width: 100%;
+    border: 0;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 20px;
+    color: #FFFFFF;
+    font-size: 14px;
+    -webkit-transition: all;
+    cursor: pointer;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+/*chaning the styles from the button if you hover over it*/
+.form button:hover,.form button:active,.form button:focus {
+    background: -webkit-linear-gradient(left, #4988e8, #3173ba);
+}
+
+body{
+    background: -webkit-linear-gradient(left, #253d61, #498CD7);
+    background: linear-gradient(to right, #253d61, #498CD7);
+    font-family: "Comfortaa", cursive;
+}

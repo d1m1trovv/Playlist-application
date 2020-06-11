@@ -1,0 +1,21 @@
+
+
+header{
+    height:150px;
+    background-color: #e6e6e6;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+header p{
+    text-align: center;
+    font-size: 70px;
+    color: #253d61;
+    font-family:'Comfortaa', cursive;
+}
+
+body{
+    background: -webkit-linear-gradient(left, #253d61, #498CD7);
+    background: linear-gradient(to right, #253d61, #498CD7);
+    font-family: "Comfortaa", cursive;
+}
+
