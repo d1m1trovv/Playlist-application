@@ -2,25 +2,56 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>PlayApp</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/table.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/css/navbar.css}"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </head>
-<body>
+<body style="background-color: #294b80">
 <ul class="nav">
     <li class="active"><a href="#">Home</a></li>
     <li><a href="#">Playlists</a></li>
     <li><a href="#">Invoices</a></li>
     <li class="logout"><a href="#">Log out</a></li>
-    <li><a th:href="@{/admin/users}">Users</a></li>
+    <li><a href="#">Users</a></li>
     <li><a href="#">Songs</a></li>
 </ul>
-
-<div><p th:utext="${adminRole}"/></div>
-<div><p th:utext="${loggedMessage}"/></div>
+<h1>Playlists</h1>
+<section class="mainSec">
+    <div class="tbl-header">
+        <table cellpadding="0" cellspacing="0" border="0">
+            <thead>
+            <tr>
+                <th>E-mail</th>
+                <th>Username</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="tbl-content">
+        <table cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td><span th:utext="${user.email}"></span></td>
+                <td><span th:utext="${user.username}"></span></td>
+                <td>
+                </td>
+                <td><form th:object="${user}" th:method="DELETE">
+                    <button class="sub" type="submit"><a th:href="@{/admin/users/{email}(email=*{email})}">DELETE</a></button>
+                </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <button class="add" type="submit" th:href="@{/admin/addPlaylist}">ADD PLAYLIST</button>
+</section>
 </body>
+
 <script type="text/javascript" th:src="@{/webjars/jquery/3.2.1/jquery.min.js/}"></script>
 <script type="text/javascript" th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}"></script>
+
 </html>

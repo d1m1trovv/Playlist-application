@@ -2,6 +2,8 @@ package webprogramming.playlistapp.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import webprogramming.playlistapp.dtos.UserDto;
@@ -9,10 +11,7 @@ import webprogramming.playlistapp.entities.*;
 import webprogramming.playlistapp.repositories.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
@@ -70,12 +69,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void subscribe(String email, int playlistID) {
+    public void subscribe(String email, long playlistID) {
         Subscription sub = new Subscription();
         sub.setUser(findUserByEmail(email));
-        sub.setPlaylist(playlistService.findById(playlistID));
+        sub.setPlaylist(playlistService.findById(playlistID).get());
         sub.setDate(LocalDateTime.now());
-        sub.setSubFee(playlistService.findById(playlistID).getSubFee());
+        sub.setSubFee(playlistService.findById(playlistID).get().getSubFee());
         subscriptionRepository.save(sub);
     }
 
@@ -108,7 +107,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void cancelSubscription(int playlistId, String email) {
+    public void cancelSubscription(long playlistId, String email) {
         List<Subscription> userSubs = findAllUserSubscriptions(email);
         for (Subscription sub : userSubs) {
             if (sub.getPlaylist().getId() == playlistId) {
@@ -118,7 +117,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Subscription findSubscriptionByUserIdAndPlaylist(int userId, int playlistId) {
+    public Subscription findSubscriptionByUserIdAndPlaylist(long userId, long playlistId) {
         return subscriptionRepository.findByUserIdAndPlaylistId(userId, playlistId);
     }
 
@@ -142,6 +141,32 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean passwordMatches(UserDto userDto) {
         return userDto.getPass().equals(userDto.getConfirmPass());
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> findUserById(long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getUserAuthoritiesByEmail(String email) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        Collection<Role> roles = userRepository.findByEmail(email).getRoles();
+
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRole()));
+        }
+        return authorities;
     }
 }
 

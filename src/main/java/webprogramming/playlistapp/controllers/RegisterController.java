@@ -6,6 +6,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.ModelAndView;
 import webprogramming.playlistapp.dtos.UserDto;
 import webprogramming.playlistapp.services.UserServiceImpl;
@@ -27,7 +28,7 @@ public class RegisterController {
     }
 
     @PostMapping(value = "/register")
-    public ModelAndView registerUser(@Valid @ModelAttribute("user") UserDto userDto, BindingResult bd){
+    public ModelAndView registerUser(@RequestBody @Valid @ModelAttribute("user") UserDto userDto, BindingResult bd){
         ModelAndView mav = new ModelAndView();
 
         if(userService.checkIfUserExists(userDto.getEmail())){

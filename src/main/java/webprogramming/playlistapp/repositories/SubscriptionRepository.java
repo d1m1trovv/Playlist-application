@@ -8,11 +8,11 @@ import webprogramming.playlistapp.entities.Subscription;
 import java.util.List;
 
 @Repository("subscriptionRepository")
-public interface SubscriptionRepository extends JpaRepository<Subscription, Integer> {
+public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
-    List<Subscription> findAllByUserId(int id);
-    void deleteById(int id);
-    Subscription findByUserIdAndPlaylistId(int userId, int subId);
-    Subscription findSubscriptionById(int id);
+    List<Subscription> findAllByUserId(long id);
+    void deleteById(long id);
+    Subscription findByUserIdAndPlaylistId(long userId,long subId);
+    Subscription findSubscriptionById(long id);
 
 }

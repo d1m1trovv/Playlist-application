@@ -4,11 +4,12 @@ import React from "react";
 
 const Constants = {
 
-    BASE_URL: "http://localhost:8080/",
+    BASE_URL: "http://localhost:8080/api/",
 
     BODY: styled.div`
     
     ul {
+    position: fixed;
     background-color: #1C2C43;
     width: 100%;
     float: left;

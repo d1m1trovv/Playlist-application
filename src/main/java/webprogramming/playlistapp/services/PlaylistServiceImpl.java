@@ -13,6 +13,7 @@ import webprogramming.playlistapp.repositories.UserRepository;
 
 
 import java.util.List;
+import java.util.Optional;
 
 @Service("playlistService")
 public class PlaylistServiceImpl implements PlaylistService{
@@ -54,12 +55,12 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     @Override
-    public void addSong(int playlistId, SongDto songDto) {
+    public void addSong(long playlistId, SongDto songDto) {
         Song song = new Song();
         song.setName(songDto.getName());
         song.setAuthor(songDto.getAuthor());
         song.setDuration(songDto.getDuration());
-        song.setPlaylist(playlistRepository.findPlaylistById(playlistId));
+        song.setPlaylist(playlistRepository.findById(playlistId).get());
         songRepository.save(song);
     }
 
@@ -79,8 +80,8 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     @Override
-    public Playlist findById(int id) {
-        return playlistRepository.findPlaylistById(id);
+    public Optional<Playlist> findById(long id) {
+        return playlistRepository.findById(id);
     }
 
     @Override
@@ -99,6 +100,16 @@ public class PlaylistServiceImpl implements PlaylistService{
             }
         }
         return false;
+    }
+
+    @Override
+    public Playlist updatePlaylist(Playlist playlist) {
+        return playlistRepository.save(playlist);
+    }
+
+    @Override
+    public void deletePlaylist(long id) {
+        playlistRepository.deleteById(id);
     }
 }
 

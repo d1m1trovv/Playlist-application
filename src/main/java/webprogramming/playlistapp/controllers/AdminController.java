@@ -1,9 +1,9 @@
 package webprogramming.playlistapp.controllers;
 
-import lombok.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -14,103 +14,128 @@ import org.springframework.web.servlet.view.RedirectView;
 import webprogramming.playlistapp.dtos.PlaylistDto;
 import webprogramming.playlistapp.dtos.SongDto;
 import webprogramming.playlistapp.entities.Playlist;
-import webprogramming.playlistapp.entities.Song;
 import webprogramming.playlistapp.entities.User;
 import webprogramming.playlistapp.services.PlaylistServiceImpl;
 import webprogramming.playlistapp.services.UserServiceImpl;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-@Controller
+@RestController
+@RequestMapping("/api")
 public class AdminController {
 
-    @Autowired
-    private @Qualifier("userService")
+    private final
     UserServiceImpl userService;
 
-    @Autowired
-    private @Qualifier("playlistService")
+    private final
     PlaylistServiceImpl playlistService;
 
-    @GetMapping(value = "/admin/homepage")
-    public ModelAndView adminHomePage(){
-        ModelAndView mav = new ModelAndView("/adminViews/homepage");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userService.findUserByEmail(authentication.getName());
-        mav.addObject("loggedMessage", "Logged in as: " + user.getUsername());
-        mav.addObject("adminRole", "Privileges: " + user.getRoles());
-        return mav;
+    public AdminController(@Qualifier("userService") UserServiceImpl userService, @Qualifier("playlistService") PlaylistServiceImpl playlistService) {
+        this.userService = userService;
+        this.playlistService = playlistService;
     }
 
     @GetMapping(value = "/admin/playlists")
-    public ModelAndView playlists(){
-        ModelAndView mav = new ModelAndView();
-        mav.addObject("playlists", playlistService.findAll());
-        mav.setViewName("/adminViews/playlists");
-        return mav;
-    }
+    public ResponseEntity<List<Playlist>> allPlaylists() {
+        try {
 
-    @GetMapping(value = "/admin/addPlaylist")
-    public ModelAndView addPlaylist(){
-        ModelAndView mav = new ModelAndView();
-        mav.addObject("playlist", new PlaylistDto());
-        mav.setViewName("/adminViews/addPlaylist");
-        return mav;
-    }
+            List<Playlist> playlists = new ArrayList<>(playlistService.findAll());
 
-    @PostMapping(value = "/admin/addPlaylist")
-    public ModelAndView createPlaylist(@Valid @ModelAttribute("playlist")PlaylistDto playlistDto,
-                                       BindingResult bd){
-        ModelAndView mav = new ModelAndView();
+            if (playlists.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
 
-        if(playlistService.checkIfPlaylistExists(playlistDto.getTitle())){
-            bd.rejectValue("title", "Playlist with this title already exists");
-            mav.addObject("playlistExists", "Playlist with this title already exists");
+            return new ResponseEntity<>(playlists, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        else{
-            playlistService.createPlaylist(playlistDto);
-            mav.addObject("successful", "You successfully created new playlist");
-            mav.addObject("playlist", new PlaylistDto());
+    }
+
+    @GetMapping("/admin/playlists/{id}")
+    public ResponseEntity<Playlist> getPlaylistById(@PathVariable("id") long id) {
+        Optional<Playlist> playlist = playlistService.findById(id);
+
+        return playlist.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping("/admin/playlist/{id}")
+    public Playlist updatePlaylist(@PathVariable("id") long id, @RequestBody Playlist playlistEnt) {
+        return playlistService.findById(id)
+                .map(playlist -> {
+                    playlist.setTitle(playlistEnt.getTitle());
+                    playlist.setAuthor(playlistEnt.getAuthor());
+                    playlist.setGenre(playlistEnt.getGenre());
+                    playlist.setSubFee(playlistEnt.getSubFee());
+                    return playlistService.updatePlaylist(playlist);
+                })
+                .orElseGet(() -> {
+                    playlistEnt.setId(id);
+                    return playlistService.updatePlaylist(playlistEnt);
+                });
+    }
+
+    @DeleteMapping("/admin/playlists/{id}")
+    public ResponseEntity<HttpStatus> deletePlaylist(@PathVariable("id") long id) {
+        try {
+            playlistService.deletePlaylist(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         }
-        mav.setViewName("adminViews/addPlaylist");
-        return mav;
     }
 
-    @GetMapping(value = "/admin/addSong/{id}")
-    public ModelAndView showAddSongToPlaylist(@PathVariable ("id") int id){
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("adminViews/addSong");
-        mav.addObject("song", new SongDto());
-        return mav;
-    }
 
-    @PostMapping(value = "/admin/addSong/{id}")
-    public ModelAndView addSongToPlaylist(@PathVariable("id") int id, @Valid @ModelAttribute("song") SongDto songDto,
-                                          BindingResult bd){
-        RedirectView redirectView = new RedirectView("/admin/addSong/{id}");
-        ModelAndView mav = new ModelAndView(redirectView);
-        if(playlistService.checkIfSongExists(songDto.getName(), playlistService.findById(id).getTitle())){
-            mav.addObject("playlistExists", "Song with the same name already exists");
-            bd.rejectValue("name", "Song with this name exists");
+    @GetMapping(value = "/admin/users")
+    public ResponseEntity<List<User>> allUsers() {
+        try {
+
+            List<User> users = new ArrayList<>(userService.findAll());
+
+            if (users.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(users, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        else{
-            playlistService.addSong(id, songDto);
-            mav.addObject("success", "Song is successfully added");
-            mav.addObject("song", new SongDto());
+    }
+
+    @GetMapping("/admin/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
+        Optional<User> user = userService.findUserById(id);
+
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping("/admin/users/{id}")
+    public User updateUser(@PathVariable("id") long id, @RequestBody User userEnt) {
+        return userService.findUserById(id)
+                .map(user -> {
+                    user.setEmail(userEnt.getEmail());
+                    user.setUsername(userEnt.getUsername());
+                    return userService.updateUser(user);
+                })
+                .orElseGet(() -> {
+                    userEnt.setId(id);
+                    return userService.updateUser(userEnt);
+                });
+    }
+
+    @DeleteMapping("/admin/users/{id}")
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") long id) {
+        try {
+            userService.deleteUser(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         }
-
-        return mav;
     }
-
-    @GetMapping(value = "/admin/songs/{id}")
-    public ModelAndView showSongs(@PathVariable ("id") int id){
-        ModelAndView mav = new ModelAndView();
-        mav.addObject("songs", playlistService.findAllPlaylistSongs(playlistService.findById(id).getTitle()));
-        mav.setViewName("adminViews/songs");
-        return mav;
-    }
-
 }
 
 

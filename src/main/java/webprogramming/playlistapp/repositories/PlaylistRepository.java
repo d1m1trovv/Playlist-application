@@ -8,10 +8,9 @@ import webprogramming.playlistapp.entities.Playlist;
 import java.util.List;
 
 @Repository("playlistRepository")
-public interface PlaylistRepository extends JpaRepository<Playlist, Integer> {
+public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     @Override
     List<Playlist> findAll();
     Playlist findPlaylistByTitle(String title);
-    Playlist findPlaylistById(int id);
 }

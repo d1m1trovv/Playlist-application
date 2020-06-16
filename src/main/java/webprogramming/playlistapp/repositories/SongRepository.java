@@ -13,8 +13,8 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
 
     @Override
     List<Song> findAll();
-    Song findSongById(int id);
-    void deleteById(int id);
-    List<Song> findAllByPlaylistId(int id);
+    Song findSongById(long id);
+    void deleteById(long id);
+    List<Song> findAllByPlaylistId(long id);
 
 }

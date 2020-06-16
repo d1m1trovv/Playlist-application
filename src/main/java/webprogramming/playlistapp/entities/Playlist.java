@@ -21,7 +21,7 @@ public class Playlist {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "playlist_id")
-    private int id;
+    private long id;
 
     @NotEmpty(message = "Playlist title is required")
     @Column(name = "title")

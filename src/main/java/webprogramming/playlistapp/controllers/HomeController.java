@@ -1,10 +1,13 @@
 package webprogramming.playlistapp.controllers;
 
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,23 +27,19 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-@Controller
+@RestController
 public class HomeController {
 
     @Autowired
     private @Qualifier("userService") UserServiceImpl userService;
 
-    @GetMapping(value = "/")
-    public ModelAndView index(){
-        return new ModelAndView("index");
-    }
 
-    @GetMapping(value = "/all")
+    @GetMapping(value = "/api/all")
     public List<User> all(){
         return userService.findAll();
     }
 
-    @GetMapping(value = "/homepage")
+    @GetMapping(value = "/api/homepage")
     public String home(Authentication authentication){
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         boolean isAdmin = authorities.contains(new SimpleGrantedAuthority("ADMIN"));

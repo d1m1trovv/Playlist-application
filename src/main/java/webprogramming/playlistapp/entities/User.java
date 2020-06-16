@@ -6,12 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Builder
@@ -24,7 +25,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
-    private int id;
+    private long id;
 
     @NotEmpty(message = "Email is required")
     @Email(message = "Provide valid email")
@@ -48,11 +49,21 @@ public class User {
     @JoinTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    private Collection<Role> roles;
 
     @OneToMany(mappedBy = "user")
     private Set<Subscription> subscriptions;
 
     @OneToMany(mappedBy = "user")
     private Set<Invoice> invoices;
+
+    public Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles){
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        for(Role role : roles){
+            authorities.add(new SimpleGrantedAuthority(role.getRole()));
+        }
+        return authorities;
+    }
+
 }
