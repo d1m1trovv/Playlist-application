@@ -25,7 +25,7 @@ public class Subscription {
     private LocalDateTime date;
 
     @Column(name = "subscription_fee")
-    private double subFee;
+    private String subFee;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

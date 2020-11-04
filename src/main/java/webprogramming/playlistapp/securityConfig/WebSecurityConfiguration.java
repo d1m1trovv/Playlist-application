@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -12,11 +13,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import webprogramming.playlistapp.services.JWTUserDetailsServiceImpl;
+import webprogramming.playlistapp.services.UserDetailsServiceImpl;
 import webprogramming.playlistapp.services.UserService;
 
 import javax.sql.DataSource;
@@ -38,7 +40,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private String rolesQuery;
 
     @Autowired
-    private JWTUserDetailsServiceImpl jwtUserDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private UserService userService;
@@ -47,7 +49,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
-                .userDetailsService(jwtUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
+                .userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
     }
 
     @Override
@@ -64,10 +66,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.GET, "/api")
                 .permitAll()
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
+                .antMatchers("/error").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JWTAuthentication(authenticationManager(), userService))
-                .addFilter(new JWTAuthorization(authenticationManager()))
+                .addFilter(new JWTAuthentication(authenticationManager(), userDetailsService))
+                .addFilter(new JWTAuthorization(authenticationManager(), userDetailsService))
                 // this disables session creation on Spring Security
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -76,6 +80,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .logoutSuccessUrl("/")
                 .and()
                 .exceptionHandling()
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .accessDeniedPage("/access-denied");
     }
 
@@ -100,4 +105,3 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return source;
     }
 }
-

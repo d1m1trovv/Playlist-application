@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
@@ -20,10 +18,13 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "role_id")
-    private int id;
+    private Integer id;
 
-    @NotEmpty
-    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "role_name")
-    private String role;
+    private ERole name;
+
+    public Role(ERole name){
+        this.name = name;
+    }
 }

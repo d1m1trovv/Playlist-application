@@ -27,6 +27,6 @@ public class PlaylistDto {
     private String genre;
 
     @NotNull
-    private double subFee;
+    private String subFee;
 
 }

@@ -58,7 +58,7 @@ const User = props => {
         <div>
             {currentUser ? (
                 <div className="edit-form">
-                    <h4>User {currentUser.email}</h4>
+                    <h4>User {currentUser.username}</h4>
                     <form>
                         <div className="form-group">
                             <label htmlFor="title">Email</label>
