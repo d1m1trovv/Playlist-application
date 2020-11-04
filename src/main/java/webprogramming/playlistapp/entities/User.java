@@ -27,20 +27,20 @@ public class User {
     @Column(name = "user_id")
     private long id;
 
-    @NotEmpty(message = "Username is required")
-    @Length(min = 7, message = "Username should have at least 7 characters")
-    @Column(name = "username")
-    private String username;
-
     @NotEmpty(message = "Email is required")
     @Email(message = "Provide valid email")
     @Column(name = "email")
     private String email;
 
+    @NotEmpty(message = "Username is required")
+    @Length(min = 7, message = "Username should have at least 7 characters")
+    @Column(name = "username")
+    private String username;
+
     @NotEmpty(message = "Password is required")
     @Length(min = 10, message = "Password should be at least 10 characters")
-    @Column(name = "password")
-    private String password;
+    @Column(name = "pass")
+    private String pass;
 
     @Column(name = "isactive")
     private int isActive;
@@ -56,5 +56,14 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private Set<Invoice> invoices;
+
+    public Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles){
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        for(Role role : roles){
+            authorities.add(new SimpleGrantedAuthority(role.getRole()));
+        }
+        return authorities;
+    }
 
 }

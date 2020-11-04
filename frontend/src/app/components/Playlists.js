@@ -3,7 +3,6 @@ import {Link} from "react-router-dom";
 
 import RequestsService from "../services/RequestsService";
 import EditIcon from "@material-ui/icons/Edit";
-import PlaylistSongs from "./PlaylistSongs";
 
 const Playlists = () => {
     const [playlists, setPlaylists] = useState([]);
@@ -33,7 +32,6 @@ const Playlists = () => {
     const setEditablePlaylist = (playlist, index) => {
         setCurrentPlaylist(playlist);
         setCurrentPlaylistIndex(index);
-        console.log("Playlist: " + playlist.title);
     }
 
     const getPlaylistByTitle = () => {
@@ -102,7 +100,8 @@ const Playlists = () => {
                                 <td><EditIcon
                                     onClick={() => setEditablePlaylist(playlist, index)}
                                     key={index}
-                                /></td>
+                                ><Link>
+                                </Link></EditIcon></td>
                             </tr>
                         ))}
                         </tbody>
@@ -119,64 +118,39 @@ const Playlists = () => {
                                 </div>
                                 <div>
                                     <label>
-                                        <strong>Author:</strong>
+                                        <strong>Description:</strong>
                                     </label>{" "}
                                     {currentPlaylist.author}
                                 </div>
                                 <div>
                                     <label>
-                                        <strong>Genre:</strong>
+                                        <strong>Description:</strong>
                                     </label>{" "}
                                     {currentPlaylist.genre}
                                 </div>
                                 <div>
                                     <label>
-                                        <strong>Subscription fee:</strong>
+                                        <strong>Description:</strong>
                                     </label>{" "}
                                     {currentPlaylist.subFee}
                                 </div>
-                                <div>
+
                                 <Link
                                     to={"/api/admin/playlists/" + currentPlaylist.id}
-                                    className="badge badge-success"
+                                    className="badge badge-warning"
                                 >
-                                    EDIT PLAYLIST
+                                    OPTIONS
                                 </Link>
-                                </div>
-                                <div>
-                                    <Link
-                                        to={"/api/admin/playlists/" + currentPlaylist.id + "/addSong"}
-                                        className="badge badge-success"
-                                    >
-                                        ADD SONG
-                                    </Link>
-                                </div>
-
-                                <div>
-                                <Link
-                                    to={"/api/admin/playlists/playlistSongs"}
-                                    className="badge badge-success"
-                                    onClick={PlaylistSongs}
-                                >
-                                    SONGS
-                                </Link>
-                                </div>
                             </div>
                         ) : (
                             <div>
                                 <br />
-                                <p>Click on playlist</p>
+                                <p>Please click on a User...</p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
-            <Link
-                to={"/api/admin/addPlaylist"}
-                className="badge badge-success"
-            >
-                ADD PLAYLIST
-            </Link>
         </section>
     )
 

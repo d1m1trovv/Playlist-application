@@ -14,7 +14,6 @@ import webprogramming.playlistapp.repositories.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service("playlistService")
 public class PlaylistServiceImpl implements PlaylistService{
@@ -45,13 +44,14 @@ public class PlaylistServiceImpl implements PlaylistService{
 
 
     @Override
-    public void createPlaylist(PlaylistDto playlistDto) {
+    public Playlist createPlaylist(PlaylistDto playlistDto) {
         Playlist playlist = new Playlist();
         playlist.setTitle(playlistDto.getTitle());
         playlist.setAuthor(playlistDto.getAuthor());
         playlist.setGenre(playlistDto.getGenre());
         playlist.setSubFee(playlistDto.getSubFee());
         playlistRepository.save(playlist);
+        return playlist;
     }
 
     @Override
@@ -61,19 +61,26 @@ public class PlaylistServiceImpl implements PlaylistService{
         song.setAuthor(songDto.getAuthor());
         song.setDuration(songDto.getDuration());
         song.setPlaylist(playlistRepository.findById(playlistId).get());
-        Set<Song> tempSongs = playlistRepository.findById(playlistId).get().getSongs();
-        tempSongs.add(song);
-        playlistRepository.findById(playlistId).get().setSongs(tempSongs);
         songRepository.save(song);
     }
 
     @Override
-    public List<Song> findAllPlaylistSongs(Long id) {
-        return songRepository.findAllByPlaylistId(id);
+    public void deleteSong(String plTitle, int songID) {
+        List<Song> songs = findAllPlaylistSongs(plTitle);
+        for(Song song : songs){
+            if(song.getId() == songID){
+                songRepository.deleteById(song.getId());
+            }
+        }
     }
 
     @Override
-    public Optional<Playlist> findPlaylistById(long id) {
+    public List<Song> findAllPlaylistSongs(String plTitle) {
+        return songRepository.findAllByPlaylistId(playlistRepository.findPlaylistByTitle(plTitle).getId());
+    }
+
+    @Override
+    public Optional<Playlist> findById(long id) {
         return playlistRepository.findById(id);
     }
 
@@ -82,6 +89,17 @@ public class PlaylistServiceImpl implements PlaylistService{
         Playlist playlist = playlistRepository.findPlaylistByTitle(title);
 
         return playlist != null;
+    }
+
+    @Override
+    public boolean checkIfSongExists(String name, String title) {
+        List<Song> songs = findAllPlaylistSongs(title);
+        for(Song song : songs){
+            if(song.getName().equals(name)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

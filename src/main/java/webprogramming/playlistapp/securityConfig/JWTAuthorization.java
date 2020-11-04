@@ -2,42 +2,25 @@ package webprogramming.playlistapp.securityConfig;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.impl.ClaimsHolder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import webprogramming.playlistapp.services.UserDetailsImpl;
-import webprogramming.playlistapp.services.UserDetailsServiceImpl;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 import static webprogramming.playlistapp.securityConfig.JWTConstants.*;
 
 
 public class JWTAuthorization extends BasicAuthenticationFilter {
 
-    private UserDetailsServiceImpl userDetailsService;
-
-    public JWTAuthorization(AuthenticationManager authManager,
-                            @Qualifier("userDetailsService") UserDetailsServiceImpl userDetailsService) {
+    public JWTAuthorization(AuthenticationManager authManager) {
         super(authManager);
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -67,14 +50,7 @@ public class JWTAuthorization extends BasicAuthenticationFilter {
                     .getSubject();
 
             if (user != null) {
-                try {
-                    UserDetails principal = userDetailsService.loadUserByUsername(user);
-
-                    return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-                }
-                catch(Exception e){
-                    return null;
-                }
+                return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
             }
             return null;
         }

@@ -1,17 +1,21 @@
 package webprogramming.playlistapp.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 import webprogramming.playlistapp.dtos.PlaylistDto;
 import webprogramming.playlistapp.dtos.SongDto;
-import webprogramming.playlistapp.dtos.UserDto;
 import webprogramming.playlistapp.entities.Playlist;
-import webprogramming.playlistapp.entities.Song;
 import webprogramming.playlistapp.entities.User;
 import webprogramming.playlistapp.services.PlaylistServiceImpl;
-import webprogramming.playlistapp.services.SongServiceImpl;
 import webprogramming.playlistapp.services.UserServiceImpl;
 
 import javax.validation.Valid;
@@ -20,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api")
 public class AdminController {
 
@@ -30,26 +33,9 @@ public class AdminController {
     private final
     PlaylistServiceImpl playlistService;
 
-    private final SongServiceImpl songService;
-
-    public AdminController(@Qualifier("userService") UserServiceImpl userService,
-                           @Qualifier("playlistService") PlaylistServiceImpl playlistService,
-                           @Qualifier("songService") SongServiceImpl songService) {
+    public AdminController(@Qualifier("userService") UserServiceImpl userService, @Qualifier("playlistService") PlaylistServiceImpl playlistService) {
         this.userService = userService;
         this.playlistService = playlistService;
-        this.songService = songService;
-    }
-
-    @PostMapping(value = "/register")
-    public ResponseEntity<?> Register(@Valid @RequestBody UserDto userDto){
-        try {
-
-            userService.createUser(userDto);
-
-            return new ResponseEntity<>("User registered!", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Failed", HttpStatus.EXPECTATION_FAILED);
-        }
     }
 
     @GetMapping(value = "/admin/playlists")
@@ -70,15 +56,15 @@ public class AdminController {
 
     @GetMapping("/admin/playlists/{id}")
     public ResponseEntity<Playlist> getPlaylistById(@PathVariable("id") long id) {
-        Optional<Playlist> playlist = playlistService.findPlaylistById(id);
+        Optional<Playlist> playlist = playlistService.findById(id);
 
         return playlist.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping("/admin/playlists/{id}")
+    @PutMapping("/admin/playlist/{id}")
     public Playlist updatePlaylist(@PathVariable("id") long id, @RequestBody Playlist playlistEnt) {
-        return playlistService.findPlaylistById(id)
+        return playlistService.findById(id)
                 .map(playlist -> {
                     playlist.setTitle(playlistEnt.getTitle());
                     playlist.setAuthor(playlistEnt.getAuthor());
@@ -99,18 +85,6 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-        }
-    }
-
-    @PostMapping("/admin/addPlaylist")
-    public ResponseEntity<?> addPlaylist(@Valid @RequestBody PlaylistDto playlistDto){
-        try {
-
-            playlistService.createPlaylist(playlistDto);
-
-            return new ResponseEntity<>("Playlist created!", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Failed", HttpStatus.EXPECTATION_FAILED);
         }
     }
 
@@ -160,51 +134,6 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-        }
-    }
-
-    @PutMapping("/admin/playlists/{id}/addSong")
-    public ResponseEntity<?> addSong(@PathVariable("id") long id,
-                                        @Valid @RequestBody SongDto songDto){
-        try {
-
-            playlistService.addSong(id, songDto);
-
-            return new ResponseEntity<>("Playlist created!", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Failed", HttpStatus.EXPECTATION_FAILED);
-        }
-    }
-
-    @GetMapping("/admin/songs")
-    public ResponseEntity<List<Song>> allSongs() {
-        try {
-
-            List<Song> songs = new ArrayList<>(songService.findAllSongs());
-
-            if (songs.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(songs, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @GetMapping("/admin/playlists/playlistSongs")
-    public ResponseEntity<List<Song>> getPlaylistSongs(@RequestParam(name = "id") Long id){
-        try {
-
-            List<Song> songs = new ArrayList<>(playlistService.findAllPlaylistSongs(id));
-
-            if (songs.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(songs, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

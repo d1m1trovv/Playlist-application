@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import RequestsService from "../services/RequestsService";
-import {Link} from "react-router-dom";
 
 const Playlist = props => {
     const initialPlaylistState = {
@@ -14,7 +13,7 @@ const Playlist = props => {
     const [message, setMessage] = useState("");
 
     const getPlaylistById = id => {
-        RequestsService.findPlaylistById(id)
+        RequestsService.getPlaylistById(id)
             .then(response => {
                 setCurrentPlaylist(response.data);
                 console.log(response.data);
@@ -47,7 +46,7 @@ const Playlist = props => {
     };
 
     const deletePlaylist = () => {
-        RequestsService.deletePlaylist(currentPlaylist.id)
+        RequestsService.deleteUser(currentPlaylist.id)
             .then(response => {
                 console.log(response.data);
                 props.history.push("/api/admin/playlists");
@@ -75,7 +74,7 @@ const Playlist = props => {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="author">Author</label>
+                            <label htmlFor="description">Username</label>
                             <input
                                 type="text"
                                 className="form-control"
@@ -86,7 +85,7 @@ const Playlist = props => {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="genre">Genre</label>
+                            <label htmlFor="description">Genre</label>
                             <input
                                 type="text"
                                 className="form-control"
@@ -97,7 +96,7 @@ const Playlist = props => {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="subFee">Subscription Fee</label>
+                            <label htmlFor="description">Subscription Fee</label>
                             <input
                                 type="text"
                                 className="form-control"

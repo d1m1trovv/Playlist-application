@@ -11,9 +11,8 @@ import java.util.Optional;
 
 public interface UserService {
 
-    public void createUser(UserDto userDto);
+    public User createUser(UserDto userDto);
     public List<User> findAll();
-    public User findUserByUsername(String name);
     public User findUserByEmail(String email);
     public void subscribe(String username, long playlistID);
     public List<Subscription> findAllUserSubscriptions(String email);
@@ -28,5 +27,6 @@ public interface UserService {
     void deleteUser(long id);
     Optional<User> findUserById(long id);
     User updateUser(User user);
+    Collection<? extends GrantedAuthority> getUserAuthoritiesByEmail(String email);
 
 }

@@ -35,9 +35,9 @@ public class Playlist {
     @Column(name = "genre")
     private String genre;
 
-    @NotEmpty
+    @NotNull
     @Column(name = "subscription_fee")
-    private String subFee;
+    private double subFee;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "playlist_songs",

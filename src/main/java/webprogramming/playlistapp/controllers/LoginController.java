@@ -10,8 +10,8 @@ import org.springframework.web.servlet.ModelAndView;
 import webprogramming.playlistapp.dtos.UserDto;
 import webprogramming.playlistapp.services.UserServiceImpl;
 
-@RestController
-@RequestMapping(value = "/login")
+@Controller
+@RequestMapping(value = "/api/login")
 public class LoginController {
 
     @Autowired

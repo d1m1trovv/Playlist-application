@@ -32,7 +32,6 @@ const Users = () => {
     const setEditableUser = (user, index) => {
         setCurrentUser(user);
         setCurrentUserIndex(index);
-        console.log("Playlist:" + user.username);
     }
 
     const getUserByEmail = () => {
@@ -74,7 +73,7 @@ const Users = () => {
                     </div>
                 </div>
             </div>
-            <h1>Users</h1>
+            <h1>Playlists</h1>
                 <div className="tbl-header">
                     <table cellPadding="0" cellSpacing="0" border="0">
                         <thead>
@@ -106,25 +105,25 @@ const Users = () => {
             <div className="info">
                 {currentUser ? (
                     <div>
-                        <h4>User Details</h4>
+                        <h4>Tutorial</h4>
                         <div>
                             <label>
-                                <strong>Email:</strong>
+                                <strong>Title:</strong>
                             </label>{" "}
                             {currentUser.email}
                         </div>
                         <div>
                             <label>
-                                <strong>Username:</strong>
+                                <strong>Description:</strong>
                             </label>{" "}
                             {currentUser.username}
                         </div>
 
                         <Link
                             to={"/api/admin/users/" + currentUser.id}
-                            className="badge badge-success"
+                            className="badge badge-warning"
                         >
-                            ACTIONS
+                            OPTIONS
                         </Link>
                     </div>
                 ) : (

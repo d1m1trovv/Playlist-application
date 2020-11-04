@@ -13,11 +13,13 @@ public interface PlaylistService {
 
     Playlist findPlaylistByTitle(String title);
     List<Playlist> findAll();
-    void createPlaylist(PlaylistDto playlistDto);
-    Optional<Playlist> findPlaylistById(long id);
+    Playlist createPlaylist(PlaylistDto playlistDto);
+    Optional<Playlist> findById(long id);
     void addSong(long playlistId, SongDto songDto);
-    List<Song> findAllPlaylistSongs(Long id);
+    List<Song> findAllPlaylistSongs(String plTitle);
+    void deleteSong(String plTitle, int songID);
     boolean checkIfPlaylistExists(String title);
+    boolean checkIfSongExists(String name, String title);
     Playlist updatePlaylist(Playlist playlist);
     void deletePlaylist(long id);
 }

@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import webprogramming.playlistapp.entities.Role;
 import webprogramming.playlistapp.validations.FieldMatch;
 import webprogramming.playlistapp.validations.ValidEmail;
 import webprogramming.playlistapp.validations.ValidPassword;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.Set;
 
 @Data
 @Builder
@@ -32,11 +30,10 @@ public class UserDto {
     @ValidPassword
     @NotEmpty
     @NotNull
-    private String password;
+    private String pass;
 
-    @ValidPassword
     @NotEmpty
     @NotNull
-    private String confirmPassword;
+    private String confirmPass;
 }
 

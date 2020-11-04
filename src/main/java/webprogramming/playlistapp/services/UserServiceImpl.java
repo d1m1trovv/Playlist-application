@@ -2,6 +2,8 @@ package webprogramming.playlistapp.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import webprogramming.playlistapp.dtos.UserDto;
@@ -44,18 +46,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void createUser(UserDto userDto) {
-        Set<Role> roles = new HashSet<>();
+    public User createUser(UserDto userDto) {
         User user = new User();
         user.setEmail(userDto.getEmail());
         user.setUsername(userDto.getUsername());
         user.setIsActive(1);
-        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-        Role userRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-        roles.add(userRole);
-        user.setRoles(roles);
+        user.setPass(bCryptPasswordEncoder.encode(userDto.getPass()));
+        Role userRole = roleRepository.findByRole("USER");
+        user.setRoles(new HashSet<>(Arrays.asList(userRole)));
         userRepository.save(user);
+        return user;
     }
 
     @Override
@@ -64,22 +64,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUserByEmail(String name) {
-        return userRepository.findByEmail(name);
-    }
-
-    @Override
-    public User findUserByUsername(String name) {
-        return userRepository.findByUsername(name);
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
     public void subscribe(String email, long playlistID) {
         Subscription sub = new Subscription();
         sub.setUser(findUserByEmail(email));
-        sub.setPlaylist(playlistService.findPlaylistById(playlistID).get());
+        sub.setPlaylist(playlistService.findById(playlistID).get());
         sub.setDate(LocalDateTime.now());
-        sub.setSubFee(playlistService.findPlaylistById(playlistID).get().getSubFee());
+        sub.setSubFee(playlistService.findById(playlistID).get().getSubFee());
         subscriptionRepository.save(sub);
     }
 
@@ -145,7 +140,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean passwordMatches(UserDto userDto) {
-        return userDto.getPassword().equals(userDto.getConfirmPassword());
+        return userDto.getPass().equals(userDto.getConfirmPass());
     }
 
     @Override
@@ -163,5 +158,15 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getUserAuthoritiesByEmail(String email) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        Collection<Role> roles = userRepository.findByEmail(email).getRoles();
+
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRole()));
+        }
+        return authorities;
+    }
 }
 

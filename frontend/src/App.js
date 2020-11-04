@@ -12,11 +12,6 @@ import Users from "./app/components/Users";
 import User from "./app/components/User";
 import Playlist from "./app/components/Playlist";
 import Playlists from "./app/components/Playlists";
-import AddPlaylist from "./app/components/AddPlaylist";
-import AddSong from "./app/components/AddSong";
-import Songs from "./app/components/Songs";
-import Song from "./app/components/Song";
-import PlaylistSongs from "./app/components/PlaylistSongs";
 
 
 const App = () => {
@@ -39,13 +34,13 @@ const App = () => {
           <nav className="navbar navbar-expand-sm navbar-light">
             <div className="navbar-nav mr-auto">
               <li className="nav-item">
-                <Link to={"/api/home"} className="nav-link">
+                <Link to={"/home"} className="nav-link">
                   Home
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to={"/api/admin/users"} className="nav-link">
-                  Users
+                  UsersList
                 </Link>
               </li>
               <li className="nav-item">
@@ -86,12 +81,8 @@ const App = () => {
               <Route exact path="/api/register" component={Register} />
               <Route exact path="/api/admin/users" component={Users} />
               <Route exact path="/api/admin/playlists" component={Playlists} />
-              <Route exact path="/api/admin/songs" component={Songs} />
-              <Route path="/api/admin/playlists/:id" component={Playlist} />
-              <Route path="/api/admin/songs/:id" component={Song} />
+              <Route path="/api/admin/playlist/:id" component={Playlist} />
               <Route path="/api/admin/users/:id" component={User} />
-              <Route path="/api/admin/addPlaylist" component={AddPlaylist}/>
-              <Route path="/api/admin/playlists/playlistSongs" component={PlaylistSongs}/>
             </Switch>
           </div>
         </div>

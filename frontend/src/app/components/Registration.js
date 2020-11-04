@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
-import isEmail from "validator/es/lib/isEmail";
+import isEmail from "validator/lib/isEmail";
 
 
 import AuthenticationService from "../services/AuthenticationService";
@@ -53,8 +53,8 @@ const Register = (props) => {
 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [pass, setPass] = useState("");
+    const [confirmPass, setConfirmPass] = useState("");
     const [successful, setSuccessful] = useState(false);
     const [message, setMessage] = useState("");
 
@@ -70,12 +70,12 @@ const Register = (props) => {
 
     const handlePasswordChange = (e) => {
         const password = e.target.value;
-        setPassword(password);
+        setPass(password);
     };
 
     const handleConfirmPasswordChange = (e) => {
         const confirmPassword = e.target.value;
-        setConfirmPassword(confirmPassword);
+        setConfirmPass(confirmPassword);
     };
 
     const handleRegister = (e) => {
@@ -84,9 +84,10 @@ const Register = (props) => {
         setMessage("");
         setSuccessful(false);
 
-        form.current.validateAll();
-        if (checkBtn.current.context._errors.length === 0) {
-            AuthenticationService.register(email, username, password, confirmPassword).then(
+        Form.current.validateAll();
+
+        if (CheckButton.current.context._errors.length === 0) {
+            AuthenticationService.register(username, email, pass, confirmPass).then(
                 (response) => {
                     setMessage(response.data.message);
                     setSuccessful(true);
@@ -148,7 +149,7 @@ const Register = (props) => {
                                     type="password"
                                     className="form-control"
                                     name="password"
-                                    value={password}
+                                    value={pass}
                                     onChange={handlePasswordChange}
                                     validations={[isRequired, isValidPassword]}
                                 />
@@ -160,7 +161,7 @@ const Register = (props) => {
                                     type="password"
                                     className="form-control"
                                     name="confirmPassword"
-                                    value={confirmPassword}
+                                    value={confirmPass}
                                     onChange={handleConfirmPasswordChange}
                                     validations={[isRequired, isValidPassword]}
                                 />
