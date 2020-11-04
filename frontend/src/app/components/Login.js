@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import Form from "react-validation/build/form";
+import Form from "react-validation/build/form"
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
 
@@ -19,19 +19,19 @@ const Login = (props) => {
     const form = useRef();
     const checkBtn = useRef();
 
-    const [email, setEmail] = useState("");
-    const [pass, setPass] = useState("");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
-    const handleEmailChange = (e) => {
-        const email = e.target.value;
-        setEmail(email);
+    const handleUsernameChange = (e) => {
+        const username = e.target.value;
+        setUsername(username);
     };
 
     const handlePasswordChange = (e) => {
-        const pass = e.target.value;
-        setPass(pass);
+        const password = e.target.value;
+        setPassword(password);
     };
 
     const handleLogin = (e) => {
@@ -43,7 +43,7 @@ const Login = (props) => {
         form.current.validateAll();
 
         if (checkBtn.current.context._errors.length === 0) {
-            AuthenticationService.login(email, pass).then(
+            AuthenticationService.login(username, password).then(
                 () => {
                     props.history.push("/");
                     window.location.reload();
@@ -81,8 +81,8 @@ const Login = (props) => {
                             type="text"
                             className="form-control"
                             name="username"
-                            value={email}
-                            onChange={handleEmailChange}
+                            value={username}
+                            onChange={handleUsernameChange}
                             validations={[required]}
                         />
                     </div>
@@ -93,7 +93,7 @@ const Login = (props) => {
                             type="password"
                             className="form-control"
                             name="password"
-                            value={pass}
+                            value={password}
                             onChange={handlePasswordChange}
                             validations={[required]}
                         />

@@ -2,21 +2,20 @@ import React, { useState, useEffect } from "react";
 import RequestsService from "../services/RequestsService";
 import {Link} from "react-router-dom";
 
-const Playlist = props => {
-    const initialPlaylistState = {
+const Song = props => {
+    const initialSongState = {
         id: null,
-        title: "",
+        name: "",
         author: "",
-        genre: "",
-        subFee: ""
+        duration: ""
     };
-    const [currentPlaylist, setCurrentPlaylist] = useState(initialPlaylistState);
+    const [currentSong, setCurrentSong] = useState(initialSongState);
     const [message, setMessage] = useState("");
 
-    const getPlaylistById = id => {
+    const getSongById = id => {
         RequestsService.findPlaylistById(id)
             .then(response => {
-                setCurrentPlaylist(response.data);
+                setCurrentSong(response.data);
                 console.log(response.data);
             })
             .catch(e => {
@@ -25,20 +24,20 @@ const Playlist = props => {
     };
 
     useEffect(() => {
-        getPlaylistById(props.match.params.id);
+        getSongById(props.match.params.id);
     }, [props.match.params.id]);
 
     const handleInputChange = event => {
         const { name, value } = event.target;
-        setCurrentPlaylist({ ...currentPlaylist, [name]: value });
+        setCurrentSong({ ...currentSong, [name]: value });
     };
 
 
-    const updatePlaylist = () => {
-        RequestsService.updatePlaylist(currentPlaylist.id, currentPlaylist)
+    const updateSong = () => {
+        RequestsService.updateSong(currentSong.id, currentSong)
             .then(response => {
                 console.log(response.data);
-                props.history.push("/api/admin/playlists");
+                props.history.push("/api/admin/songs");
                 setMessage("The user was updated successfully!");
             })
             .catch(e => {
@@ -46,11 +45,11 @@ const Playlist = props => {
             });
     };
 
-    const deletePlaylist = () => {
-        RequestsService.deletePlaylist(currentPlaylist.id)
+    const deleteSong = () => {
+        RequestsService.deleteSong(currentSong.id)
             .then(response => {
                 console.log(response.data);
-                props.history.push("/api/admin/playlists");
+                props.history.push("/api/admin/songs");
             })
             .catch(e => {
                 console.log(e);
@@ -59,18 +58,18 @@ const Playlist = props => {
 
     return (
         <div>
-            {currentPlaylist ? (
+            {currentSong ? (
                 <div className="edit-form">
-                    <h4>Playlist</h4>
+                    <h4>Song</h4>
                     <form>
                         <div className="form-group">
-                            <label htmlFor="title">Title</label>
+                            <label htmlFor="title">Name</label>
                             <input
                                 type="text"
                                 className="form-control"
-                                id="title"
-                                name="title"
-                                value={currentPlaylist.title}
+                                id="name"
+                                name="name"
+                                value={currentSong.name}
                                 onChange={handleInputChange}
                             />
                         </div>
@@ -81,42 +80,31 @@ const Playlist = props => {
                                 className="form-control"
                                 id="author"
                                 name="author"
-                                value={currentPlaylist.author}
+                                value={currentSong.author}
                                 onChange={handleInputChange}
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="genre">Genre</label>
+                            <label htmlFor="duration">Duration</label>
                             <input
                                 type="text"
                                 className="form-control"
-                                id="genre"
-                                name="genre"
-                                value={currentPlaylist.genre}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="subFee">Subscription Fee</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                id="subFee"
-                                name="subFee"
-                                value={currentPlaylist.subFee}
+                                id="duration"
+                                name="duration"
+                                value={currentSong.duration}
                                 onChange={handleInputChange}
                             />
                         </div>
                     </form>
 
-                    <button className="badge badge-danger mr-2" onClick={deletePlaylist}>
+                    <button className="badge badge-danger mr-2" onClick={deleteSong}>
                         Delete
                     </button>
 
                     <button
                         type="submit"
                         className="badge badge-success"
-                        onClick={updatePlaylist}
+                        onClick={updateSong}
                     >
                         Update
                     </button>
@@ -132,4 +120,4 @@ const Playlist = props => {
     );
 };
 
-export default Playlist;
+export default Song;

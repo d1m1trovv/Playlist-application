@@ -1,20 +1,20 @@
 import axios from "axios";
 import Constants from "../constants/Constants";
 
-const register = (username, email, password, confirmPassword) => {
+const register = (email, username, password, confirmPassword) => {
     return axios.post(Constants.BASE_URL + "register", {
-        username,
         email,
+        username,
         password,
         confirmPassword
     });
 };
 
-const login = (email, pass) => {
+const login = (username, password) => {
     return axios
         .post(Constants.BASE_URL + "login", {
-            email,
-            pass,
+            username,
+            password,
         })
         .then((response) => {
 

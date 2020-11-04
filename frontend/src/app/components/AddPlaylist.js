@@ -1,11 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, {useRef, useState} from "react";
+import AuthenticationService from "../services/AuthenticationService";
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
-import isEmail from "validator/es/lib/isEmail";
-
-
-import AuthenticationService from "../services/AuthenticationService";
+import RequestsService from "../services/RequestsService";
 
 const isRequired = (value) => {
     if (!value) {
@@ -17,68 +15,38 @@ const isRequired = (value) => {
     }
 };
 
-const isEmailValid = (value) => {
-    if (!isEmail(value)) {
-        return (
-            <div className="alert alert-danger" role="alert">
-                This is not a valid email.
-            </div>
-        );
-    }
-};
-
-const isUsernameValid = (value) => {
-    if (value.length < 3 || value.length > 20) {
-        return (
-            <div className="alert alert-danger" role="alert">
-                The username must be between 3 and 20 characters.
-            </div>
-        );
-    }
-};
-
-const isValidPassword = (value) => {
-    if (value.length < 6 || value.length > 40) {
-        return (
-            <div className="alert alert-danger" role="alert">
-                The password must be between 6 and 40 characters.
-            </div>
-        );
-    }
-};
-
-const Register = (props) => {
+const AddPlaylist = (props) => {
     const form = useRef();
     const checkBtn = useRef();
 
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [title, setTitle] = useState("");
+    const [author, setAuthor] = useState("");
+    const [genre, setGenre] = useState("");
+    const [subFee, setSubFee] = useState("");
     const [successful, setSuccessful] = useState(false);
     const [message, setMessage] = useState("");
 
-    const handleUsernameChange = (e) => {
-        const username = e.target.value;
-        setUsername(username);
+    const handleTitleChange = (e) => {
+        const title = e.target.value;
+        setTitle(title);
     };
 
-    const handleEmailChange = (e) => {
-        const email = e.target.value;
-        setEmail(email);
+    const handleAuthorChange = (e) => {
+        const author = e.target.value;
+        setAuthor(author);
     };
 
-    const handlePasswordChange = (e) => {
-        const password = e.target.value;
-        setPassword(password);
+    const handleGenreChange = (e) => {
+        const genre = e.target.value;
+        setGenre(genre);
     };
 
-    const handleConfirmPasswordChange = (e) => {
-        const confirmPassword = e.target.value;
-        setConfirmPassword(confirmPassword);
+    const handleSubFeeChange = (e) => {
+        const subFee = e.target.value;
+        setSubFee(subFee);
     };
 
-    const handleRegister = (e) => {
+    const handleAddPlaylist = (e) => {
         e.preventDefault();
 
         setMessage("");
@@ -86,9 +54,10 @@ const Register = (props) => {
 
         form.current.validateAll();
         if (checkBtn.current.context._errors.length === 0) {
-            AuthenticationService.register(email, username, password, confirmPassword).then(
+            RequestsService.addPlaylist(title, author, genre, subFee).then(
                 (response) => {
                     setMessage(response.data.message);
+                    props.history.push("/api/admin/playlists");
                     setSuccessful(true);
                 },
                 (error) => {
@@ -115,59 +84,59 @@ const Register = (props) => {
                     className="profile-img-card"
                 />
 
-                <Form onSubmit={handleRegister} ref={form}>
+                <Form onSubmit={handleAddPlaylist} ref={form}>
                     {!successful && (
                         <div>
                             <div className="form-group">
-                                <label htmlFor="username">Email</label>
+                                <label htmlFor="title">Title</label>
                                 <Input
                                     type="text"
                                     className="form-control"
-                                    name="username"
-                                    value={email}
-                                    onChange={handleEmailChange}
-                                    validations={[isRequired, isEmailValid]}
+                                    name="title"
+                                    value={title}
+                                    onChange={handleTitleChange}
+                                    validations={[isRequired]}
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="email">Username</label>
+                                <label htmlFor="author">Author</label>
                                 <Input
                                     type="text"
                                     className="form-control"
-                                    name="email"
-                                    value={username}
-                                    onChange={handleUsernameChange}
-                                    validations={[isRequired, isUsernameValid]}
+                                    name="author"
+                                    value={author}
+                                    onChange={handleAuthorChange}
+                                    validations={[isRequired]}
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="password">Password</label>
+                                <label htmlFor="genre">Genre</label>
                                 <Input
-                                    type="password"
+                                    type="text"
                                     className="form-control"
-                                    name="password"
-                                    value={password}
-                                    onChange={handlePasswordChange}
-                                    validations={[isRequired, isValidPassword]}
+                                    name="genre"
+                                    value={genre}
+                                    onChange={handleGenreChange}
+                                    validations={[isRequired]}
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="password">Confirm password</label>
+                                <label htmlFor="subFee">Subscription fee</label>
                                 <Input
-                                    type="password"
+                                    type="text"
                                     className="form-control"
-                                    name="confirmPassword"
-                                    value={confirmPassword}
-                                    onChange={handleConfirmPasswordChange}
-                                    validations={[isRequired, isValidPassword]}
+                                    name="subFee"
+                                    value={subFee}
+                                    onChange={handleSubFeeChange}
+                                    validations={[isRequired]}
                                 />
                             </div>
 
                             <div className="form-group">
-                                <button className="btn btn-primary btn-block">Sign Up</button>
+                                <button className="btn btn-primary btn-block">Add Playlist</button>
                             </div>
                         </div>
                     )}
@@ -191,4 +160,4 @@ const Register = (props) => {
     );
 };
 
-export default Register;
+export default AddPlaylist;

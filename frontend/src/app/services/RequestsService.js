@@ -33,7 +33,7 @@ const getPlaylistByTitle = (title) => {
     return axios.get(Constants.BASE_URL + `admin/playlists/${title}`, {headers: authHeader()});
 }
 
-const getPlaylistById = (id) => {
+const findPlaylistById = id => {
     return axios.get(Constants.BASE_URL + `admin/playlists/${id}`, {headers: authHeader()});
 }
 
@@ -44,14 +44,31 @@ const updatePlaylist = (id, data) => {
 const deletePlaylist = (id) => {
     return axios.delete(Constants.BASE_URL + `admin/playlists/${id}`, {headers: authHeader()});
 }
+
+const addPlaylist = (title, author, genre, subFee) => {
+    return axios.post(Constants.BASE_URL + `admin/addPlaylist`,
+        {title, author, genre, subFee}, {headers: authHeader()})
+}
+
+const addSongToPlaylist = (playlistId, name, author, duration) => {
+    return axios.put(Constants.BASE_URL + `admin/playlists/${playlistId}/addSong`,
+        {playlistId, name, author, duration}, {headers: authHeader()})
+}
+
+const getPlaylistSongs = (id) => {
+    return axios.get(Constants.BASE_URL + `admin/playlists/playlistSongs`, {headers: authHeader(), params: {id: 'id'}})
+}
 export default {
+    getPlaylistSongs,
+    addSongToPlaylist,
+    addPlaylist,
     getUsers,
     findByEmail,
     findUserById,
     updateUser,
     deleteUser,
     getPlaylists,
-    getPlaylistById,
+    findPlaylistById,
     updatePlaylist,
     deletePlaylist
 };
