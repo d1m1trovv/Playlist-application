@@ -60,10 +60,6 @@ const AddSong = (props) => {
             });
     };
 
-    useEffect(() => {
-        getCurrentPlaylistById(props.match.params.id);
-    }, [props.match.params.id]);
-
     const handleAddSong = (e) => {
         e.preventDefault();
 
@@ -72,7 +68,7 @@ const AddSong = (props) => {
 
         form.current.validateAll();
         if (checkBtn.current.context._errors.length === 0) {
-            RequestsService.addSongToPlaylist(currentPlaylist.id, name, author, duration).then(
+            RequestsService.addSongToPlaylist(name, author, duration).then(
                 (response) => {
                     setMessage(response.data.message);
                     props.history.push("/api/admin/playlists");
@@ -102,7 +98,7 @@ const AddSong = (props) => {
                     className="profile-img-card"
                 />
 
-                <Form onSubmit={handleAddSong()} ref={form}>
+                <Form onSubmit={handleAddSong} ref={form}>
                     {!successful && (
                         <div>
                             <div className="form-group">

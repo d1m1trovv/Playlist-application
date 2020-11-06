@@ -2,16 +2,25 @@ import React, { useState, useEffect } from "react";
 import {Link} from "react-router-dom";
 
 import RequestsService from "../services/RequestsService";
-import EditIcon from "@material-ui/icons/Edit";
+import AddIcon from "@material-ui/icons/Add";
 
-const Songs = () => {
+const Songs = (props) => {
+
+    const initialSongState = {
+        id: null,
+        name: "",
+        author: "",
+        duration: ""
+    };
+
     const [songs, setSongs] = useState([]);
-    const [currentSong, setCurrentSong] = useState(null);
+    const [currentSong, setCurrentSong] = useState(initialSongState);
     const [currentSongIndex, setCurrentSongIndex] = useState(-1);
     const [currentPlaylistTitle, setCurrentPlaylistTitle] = useState("");
+    const [showPopUp, setShowPopUp] = useState(false);
 
     useEffect(() => {
-        RequestsService.getSongs().then(
+        RequestsService.getSongsToAdd(props.match.params.id).then(
             (response) => {
                 setSongs(response.data);
                 console.log(response.data);
@@ -29,22 +38,28 @@ const Songs = () => {
         );
     }, [])
 
-    const setEditableSong = (song, index) => {
-        setCurrentSong(song);
-        setCurrentSongIndex(index);
-        console.log("Playlist: " + song.name);
+    const showPopUpOnClick = () =>{
+        setShowPopUp(true);
     }
 
-    const getSongByName = () => {
-        RequestsService.findSongByName(currentPlaylistTitle)
+    const putSongInPlaylist = (song) => {
+        RequestsService.addSongToPlaylistBySongId(props.match.params.id, song)
             .then(response => {
-                setSongs(response.data);
                 console.log(response.data);
+                props.history.push("/api/admin/playlists/" + props.match.params.id);
+                console.log(song);
             })
             .catch(e => {
                 console.log(e);
+                console.log("Current song: " + currentSong);
             });
-    };
+    }
+
+    const setEditableSong = (song, index) => {
+        setCurrentSong(song);
+        setCurrentSongIndex(index);
+        showPopUpOnClick();
+    }
 
     const handleChangeName = (e) => {
         const currentPlaylistTitle = e.target.value;
@@ -67,14 +82,13 @@ const Songs = () => {
                             <button
                                 className="btn btn-outline-secondary"
                                 type="button"
-                                onClick={getSongByName}
                             >
                                 Search
                             </button>
                         </div>
                     </div>
                 </div>
-                <h1>Songs</h1>
+                <h1>SELECT SONGS TO ADD..</h1>
                 <div className="tbl-header">
                     <table cellPadding="0" cellSpacing="0" border="0">
                         <thead>
@@ -92,73 +106,28 @@ const Songs = () => {
                         <tbody>
                         {songs &&
                         songs.map((song, index) => (
-                            <tr>
+                            <tr
+                                onClick={() => setEditableSong(song, index)}
+                                key={index}
+                            >
                                 <td>{song.name}</td>
                                 <td>{song.author}</td>
                                 <td>{song.duration}</td>
-                                <td><EditIcon
-                                    onClick={() => setEditableSong(song, index)}
-                                    key={index}
-                                /></td>
+                                <td>{showPopUp && currentSongIndex === index ?
+                                <AddIcon
+                                    onClick={() => putSongInPlaylist(song)}
+                                />
+                                    : null
+                                }</td>
                             </tr>
                         ))}
                         </tbody>
                     </table>
-                    <div className="info">
-                        {currentSong ? (
-                            <div>
-                                <h4>Song</h4>
-                                <div>
-                                    <label>
-                                        <strong>Name:</strong>
-                                    </label>{" "}
-                                    {currentSong.name}
-                                </div>
-                                <div>
-                                    <label>
-                                        <strong>Author:</strong>
-                                    </label>{" "}
-                                    {currentSong.author}
-                                </div>
-                                <div>
-                                    <label>
-                                        <strong>Duration:</strong>
-                                    </label>{" "}
-                                    {currentSong.duration}
-                                </div>
-                                <div>
-                                    <Link
-                                        to={"/api/admin/playlists/" + currentSong.id}
-                                        className="badge badge-success"
-                                    >
-                                        EDIT PLAYLIST
-                                    </Link>
-                                </div>
-
-                                <div>
-                                    <Link
-                                        to={"/api/admin/songs/addToPlaylist"}
-                                        className="badge badge-success"
-                                    >
-                                        ADD TO PLAYLIST
-                                    </Link>
-                                </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <br />
-                                <p>Click on playlist</p>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
-            <Link
-                to={"/api/admin/addSong"}
-                className="badge badge-success"
-            >
-                ADD SONG
-            </Link>
+            <div className="butn btn-one">
+                <span>CREATE NEW PLAYLIST</span>
+            </div>
         </section>
     )
 

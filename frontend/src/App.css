@@ -71,12 +71,12 @@ label {
 }
 
 body{
-  background: -webkit-linear-gradient(left, #8f8f90, #c1c0c0);
+  background: -webkit-linear-gradient(left, #600563, #cb4d09);
   font-family: "Comfortaa", cursive;
 }
 
 .navbar{
-  background-color: #1C2C43;
+  background: -webkit-linear-gradient(left, #29023e, #5a037f);
 }
 
 .navbar .navbar-nav .nav-link{
@@ -89,7 +89,7 @@ body{
 }
 
 h1{
-  font-size: 30px;
+  font-size: 50px;
   color: #fff;
   text-transform: uppercase;
   font-weight: 300;
@@ -136,7 +136,7 @@ table .sub{
 
 }
 
-.mainSec table{
+.mainSec table, .playlistSec table{
   width:100%;
   table-layout: fixed;
 }
@@ -150,12 +150,12 @@ table .sub{
   margin-top: 0px;
   border: 1px solid rgba(255,255,255,0.3);
 }
-.mainSec th{
+.mainSec th, .playlistSec th{
   padding: 20px 15px;
   text-align: left;
   font-weight: 500;
-  font-size: 12px;
-  color: #fff;
+  font-size: 15px;
+  color: #000000;
   text-transform: uppercase;
 }
 .info{
@@ -166,23 +166,176 @@ table .sub{
   margin-right: 80px;
   text-align: center;
 }
-.mainSec td{
+.mainSec td, .playlistSec td{
   padding: 15px;
   text-align: left;
   vertical-align:middle;
   font-weight: 300;
-  font-size: 12px;
-  color: #000000;
+  font-size: 15px;
+  color: #ffffff;
   border-bottom: solid 1px rgba(255,255,255,0.1);
+}
+
+.tbl-content tr{
+  cursor: pointer;
+}
+
+.col-md-0{
+ max-width: 500px;
+  text-align: center;
+}
+
+.tbl-content tr:hover{
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.playlistHeader *{padding: 0; margin: 0; box-sizing: border-box;}
+.playlistHeader body{height: 900px;}
+.playlistHeader header {
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: auto;
+  background-size: cover;
+  background: url('http://www.autodatz.com/wp-content/uploads/2017/05/Old-Car-Wallpapers-Hd-36-with-Old-Car-Wallpapers-Hd.jpg') fixed;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 85% 85% / 30%;
+}
+.container-fluid{
+  padding: 0px;
+}
+
+.playlistHeader header .overlay{
+  width: 100%;
+  height: 100%;
+  padding: 50px;
+  color: #FFF;
+  text-shadow: 1px 1px 1px #333;
+  background-image: linear-gradient( 135deg, #9f05ff69 10%, #fd5e086b 100%);
+
+}
+
+.playlistHeader input {
+  font-family: inherit;
+  text-align: left;
+  border: 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.38);
+  border-radius: 15px 15px 15px 15px;
+  outline: 0;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 5px 0;
+  background: rgba(255, 255, 255, 0.14);
+  transition: border-color 0.2s;
+}
+
+.playlistHeader label{
+  margin-top: 10px;
+  font-size: 1.3rem;
+}
+
+.playlistHeader h1 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 80px;
+  margin-bottom: 30px;
+}
+
+.playlistHeader h3, p {
+  font-family: 'Open Sans', sans-serif;
+  margin-bottom: 30px;
+}
+
+.playlistHeader button {
+  border: none;
+  outline: none;
+  padding: 10px 20px;
+  border-radius: 50px;
+  color: #333;
+  background: #fff;
+  margin-bottom: 50px;
+  box-shadow: 0 3px 20px 0 #0000003b;
+}
+.playlistHeader button:hover{
+  cursor: pointer;
+}
+
+.playlistSec{
+  width: 100%;
+  max-width: none;
 }
 
 
 /* demo styles */
 
 
-.mainSec{
+.mainSec {
   margin: 0px;
-  max-width: 900px;
+  padding: 50px;
+
+}
+
+.btn:hover{
+  color: #FFFFFF;
+}
+
+.butn {
+  line-height: 50px;
+  height: 50px;
+  width: 300px;
+  cursor: pointer;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.btn-one {
+  color: #FFF;
+  transition: all 0.3s;
+  position: relative;
+}
+.btn-one span {
+  transition: all 0.3s;
+}
+.btn-one::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0;
+  transition: all 0.3s;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-top-style: solid;
+  border-bottom-style: solid;
+  border-top-color: rgba(255,255,255,0.5);
+  border-bottom-color: rgba(255,255,255,0.5);
+  transform: scale(0.1, 1);
+}
+.btn-one:hover span {
+  letter-spacing: 2px;
+}
+.btn-one:hover::before {
+  opacity: 1;
+  transform: scale(1, 1);
+}
+.btn-one::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  transition: all 0.3s;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.btn-one:hover::after {
+  opacity: 0;
+  transform: scale(0.1, 1);
 }
 /* for custom scrollbar for webkit browser*/
 

@@ -45,20 +45,35 @@ const deletePlaylist = (id) => {
     return axios.delete(Constants.BASE_URL + `admin/playlists/${id}`, {headers: authHeader()});
 }
 
+const getSongById = (id, songId) => {
+    return axios.get(Constants.BASE_URL + `admin/addSongsToPlaylist/${id}?songId=${songId}`,
+        {headers: authHeader()})
+}
+
 const addPlaylist = (title, author, genre, subFee) => {
     return axios.post(Constants.BASE_URL + `admin/addPlaylist`,
         {title, author, genre, subFee}, {headers: authHeader()})
 }
 
-const addSongToPlaylist = (playlistId, name, author, duration) => {
-    return axios.put(Constants.BASE_URL + `admin/playlists/${playlistId}/addSong`,
-        {playlistId, name, author, duration}, {headers: authHeader()})
+const addSongToPlaylist = (name, author, duration) => {
+    return axios.post(Constants.BASE_URL + `admin/addSong`,
+        {name, author, duration}, {headers: authHeader()})
 }
 
-const getPlaylistSongs = (id) => {
-    return axios.get(Constants.BASE_URL + `admin/playlists/playlistSongs`, {headers: authHeader(), params: {id: 'id'}})
+const getPlaylistSongs = id => {
+    return axios.get(Constants.BASE_URL + `admin/playlists/${id}`, {headers: authHeader()})
+}
+
+const getSongsToAdd = id => {
+    return axios.get(Constants.BASE_URL + `admin/addSongsToPlaylist/${id}`, {headers: authHeader()})
+}
+
+const addSongToPlaylistBySongId = (id, song) => {
+    return axios.put(Constants.BASE_URL + `admin/addSongsToPlaylist/${id}`, song, {headers: authHeader()})
 }
 export default {
+    addSongToPlaylistBySongId,
+    getSongsToAdd,
     getPlaylistSongs,
     addSongToPlaylist,
     addPlaylist,

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import {Link} from "react-router-dom";
 
 import RequestsService from "../services/RequestsService";
-import EditIcon from "@material-ui/icons/Edit";
+import PlayCircleFilled from "@material-ui/icons/PlayCircleFilled";
 import PlaylistSongs from "./PlaylistSongs";
 
-const Playlists = () => {
+const Playlists = (props) => {
     const [playlists, setPlaylists] = useState([]);
     const [currentPlaylist, setCurrentPlaylist] = useState(null);
     const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(-1);
@@ -33,6 +33,7 @@ const Playlists = () => {
     const setEditablePlaylist = (playlist, index) => {
         setCurrentPlaylist(playlist);
         setCurrentPlaylistIndex(index);
+        props.history.push("/api/admin/playlists/" + playlist.id)
         console.log("Playlist: " + playlist.title);
     }
 
@@ -55,8 +56,9 @@ const Playlists = () => {
     return (
         <section className="mainSec">
             <div>
-                <div className="col-md-8">
-                    <div className="input-group mb-3">
+                <h1>Playlists</h1>
+                <div className="col-md-0">
+                    <div className="input-group mt-5">
                         <input
                             type="text"
                             className="form-control"
@@ -66,7 +68,7 @@ const Playlists = () => {
                         />
                         <div className="input-group-append">
                             <button
-                                className="btn btn-outline-secondary"
+                                className="btn btn-one"
                                 type="button"
                                 onClick={getPlaylistByTitle}
                             >
@@ -75,11 +77,11 @@ const Playlists = () => {
                         </div>
                     </div>
                 </div>
-                <h1>Playlists</h1>
                 <div className="tbl-header">
                     <table cellPadding="0" cellSpacing="0" border="0">
                         <thead>
                         <tr>
+                            <th>#</th>
                             <th>Title</th>
                             <th>Author</th>
                             <th>Genre</th>
@@ -94,89 +96,25 @@ const Playlists = () => {
                         <tbody>
                         {playlists &&
                         playlists.map((playlist, index) => (
-                            <tr>
+                            <tr
+                                onClick={() => setEditablePlaylist(playlist, index)}
+                                key={index}
+                            >
+                                <td>{index + 1}</td>
                                 <td>{playlist.title}</td>
                                 <td>{playlist.author}</td>
                                 <td>{playlist.genre}</td>
                                 <td>{playlist.subFee}</td>
-                                <td><EditIcon
-                                    onClick={() => setEditablePlaylist(playlist, index)}
-                                    key={index}
-                                /></td>
+                                <td><PlayCircleFilled/></td>
                             </tr>
                         ))}
                         </tbody>
                     </table>
-                    <div className="info">
-                        {currentPlaylist ? (
-                            <div>
-                                <h4>Playlist</h4>
-                                <div>
-                                    <label>
-                                        <strong>Title:</strong>
-                                    </label>{" "}
-                                    {currentPlaylist.title}
-                                </div>
-                                <div>
-                                    <label>
-                                        <strong>Author:</strong>
-                                    </label>{" "}
-                                    {currentPlaylist.author}
-                                </div>
-                                <div>
-                                    <label>
-                                        <strong>Genre:</strong>
-                                    </label>{" "}
-                                    {currentPlaylist.genre}
-                                </div>
-                                <div>
-                                    <label>
-                                        <strong>Subscription fee:</strong>
-                                    </label>{" "}
-                                    {currentPlaylist.subFee}
-                                </div>
-                                <div>
-                                <Link
-                                    to={"/api/admin/playlists/" + currentPlaylist.id}
-                                    className="badge badge-success"
-                                >
-                                    EDIT PLAYLIST
-                                </Link>
-                                </div>
-                                <div>
-                                    <Link
-                                        to={"/api/admin/playlists/" + currentPlaylist.id + "/addSong"}
-                                        className="badge badge-success"
-                                    >
-                                        ADD SONG
-                                    </Link>
-                                </div>
-
-                                <div>
-                                <Link
-                                    to={"/api/admin/playlists/playlistSongs"}
-                                    className="badge badge-success"
-                                    onClick={PlaylistSongs}
-                                >
-                                    SONGS
-                                </Link>
-                                </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <br />
-                                <p>Click on playlist</p>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
-            <Link
-                to={"/api/admin/addPlaylist"}
-                className="badge badge-success"
-            >
-                ADD PLAYLIST
-            </Link>
+            <div className="butn btn-one">
+                <span>CREATE NEW PLAYLIST</span>
+            </div>
         </section>
     )
 

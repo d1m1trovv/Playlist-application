@@ -55,12 +55,14 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     @Override
-    public void addSong(long playlistId, SongDto songDto) {
+    public void addSong(long playlistId, Song songEnt) {
         Song song = new Song();
-        song.setName(songDto.getName());
-        song.setAuthor(songDto.getAuthor());
-        song.setDuration(songDto.getDuration());
-        song.setPlaylist(playlistRepository.findById(playlistId).get());
+        song.setName(songEnt.getName());
+        song.setAuthor(songEnt.getAuthor());
+        song.setDuration(songEnt.getDuration());
+        Set<Playlist> songPlaylists = song.getPlaylistSet();
+        songPlaylists.add(playlistRepository.findById(playlistId).get());
+        song.setPlaylistSet(songPlaylists);
         Set<Song> tempSongs = playlistRepository.findById(playlistId).get().getSongs();
         tempSongs.add(song);
         playlistRepository.findById(playlistId).get().setSongs(tempSongs);
@@ -68,8 +70,8 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     @Override
-    public List<Song> findAllPlaylistSongs(Long id) {
-        return songRepository.findAllByPlaylistId(id);
+    public Set<Song> findAllPlaylistSongs(Long id) {
+        return playlistRepository.findById(id).get().getSongs();
     }
 
     @Override

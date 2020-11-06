@@ -8,6 +8,7 @@ import webprogramming.playlistapp.entities.Song;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface PlaylistService {
 
@@ -15,8 +16,8 @@ public interface PlaylistService {
     List<Playlist> findAll();
     void createPlaylist(PlaylistDto playlistDto);
     Optional<Playlist> findPlaylistById(long id);
-    void addSong(long playlistId, SongDto songDto);
-    List<Song> findAllPlaylistSongs(Long id);
+    void addSong(long playlistId, Song songEnt);
+    Set<Song> findAllPlaylistSongs(Long id);
     boolean checkIfPlaylistExists(String title);
     Playlist updatePlaylist(Playlist playlist);
     void deletePlaylist(long id);

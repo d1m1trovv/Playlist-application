@@ -1,5 +1,6 @@
 package webprogramming.playlistapp.controllers;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,12 @@ import webprogramming.playlistapp.services.SongServiceImpl;
 import webprogramming.playlistapp.services.UserServiceImpl;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -30,18 +34,23 @@ public class AdminController {
     private final
     PlaylistServiceImpl playlistService;
 
-    private final SongServiceImpl songService;
+    private final
+    SongServiceImpl songService;
+
+    private final ModelMapper modelMapper;
 
     public AdminController(@Qualifier("userService") UserServiceImpl userService,
                            @Qualifier("playlistService") PlaylistServiceImpl playlistService,
-                           @Qualifier("songService") SongServiceImpl songService) {
+                           @Qualifier("songService") SongServiceImpl songService,
+                           @Qualifier("modelMapper") ModelMapper modelMapper) {
         this.userService = userService;
         this.playlistService = playlistService;
         this.songService = songService;
+        this.modelMapper = modelMapper;
     }
 
     @PostMapping(value = "/register")
-    public ResponseEntity<?> Register(@Valid @RequestBody UserDto userDto){
+    public ResponseEntity<?> Register(@Valid @RequestBody UserDto userDto) {
         try {
 
             userService.createUser(userDto);
@@ -53,43 +62,62 @@ public class AdminController {
     }
 
     @GetMapping(value = "/admin/playlists")
-    public ResponseEntity<List<Playlist>> allPlaylists() {
+    public ResponseEntity<List<PlaylistDto>> allPlaylists() {
         try {
 
-            List<Playlist> playlists = new ArrayList<>(playlistService.findAll());
+            List<PlaylistDto> playlistsDto =
+                    playlistService.findAll().stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
 
-            if (playlists.isEmpty()) {
+            if (playlistsDto.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
-            return new ResponseEntity<>(playlists, HttpStatus.OK);
+            return new ResponseEntity<>(playlistsDto, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/admin/playlists/{id}")
-    public ResponseEntity<Playlist> getPlaylistById(@PathVariable("id") long id) {
-        Optional<Playlist> playlist = playlistService.findPlaylistById(id);
+    public ResponseEntity<PlaylistDto> getPlaylistById(@PathVariable("id") long id) {
+        try {
+            Playlist playlist = playlistService.findPlaylistById(id).get();
 
-        return playlist.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            PlaylistDto playlistDto = convertToDto(playlist);
+
+            //return playlistDto.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+            //      .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+            return new ResponseEntity<>(playlistDto, HttpStatus.OK);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/admin/playlists/{id}")
-    public Playlist updatePlaylist(@PathVariable("id") long id, @RequestBody Playlist playlistEnt) {
-        return playlistService.findPlaylistById(id)
-                .map(playlist -> {
-                    playlist.setTitle(playlistEnt.getTitle());
-                    playlist.setAuthor(playlistEnt.getAuthor());
-                    playlist.setGenre(playlistEnt.getGenre());
-                    playlist.setSubFee(playlistEnt.getSubFee());
-                    return playlistService.updatePlaylist(playlist);
-                })
-                .orElseGet(() -> {
-                    playlistEnt.setId(id);
-                    return playlistService.updatePlaylist(playlistEnt);
-                });
+    public PlaylistDto updatePlaylist(@PathVariable("id") long id, @RequestBody PlaylistDto playlistDto) {
+        try {
+            Playlist tempPl = convertToEntity(playlistDto);
+
+            return playlistService.findPlaylistById(id)
+                    .map(playlist -> {
+                        playlist.setTitle(playlistDto.getTitle());
+                        playlist.setAuthor(playlistDto.getAuthor());
+                        playlist.setGenre(playlistDto.getGenre());
+                        playlist.setSubFee(playlistDto.getSubFee());
+                        playlistService.updatePlaylist(playlist);
+                        return convertToDto(playlist);
+                    })
+                    .orElseGet(() -> {
+                        playlistDto.setId(id);
+                        return convertToDto(playlistService.updatePlaylist(tempPl));
+                    });
+        }catch (Exception e){
+            return null;
+        }
     }
 
     @DeleteMapping("/admin/playlists/{id}")
@@ -103,7 +131,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/addPlaylist")
-    public ResponseEntity<?> addPlaylist(@Valid @RequestBody PlaylistDto playlistDto){
+    public ResponseEntity<?> addPlaylist(@Valid @RequestBody PlaylistDto playlistDto) {
         try {
 
             playlistService.createPlaylist(playlistDto);
@@ -163,12 +191,11 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/admin/playlists/{id}/addSong")
-    public ResponseEntity<?> addSong(@PathVariable("id") long id,
-                                        @Valid @RequestBody SongDto songDto){
+    @PostMapping("/admin/addSong")
+    public ResponseEntity<?> addSong(@Valid @RequestBody SongDto songDto) {
         try {
 
-            playlistService.addSong(id, songDto);
+            songService.createSong(songDto);
 
             return new ResponseEntity<>("Playlist created!", HttpStatus.OK);
         } catch (Exception e) {
@@ -192,8 +219,8 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/admin/playlists/playlistSongs")
-    public ResponseEntity<List<Song>> getPlaylistSongs(@RequestParam(name = "id") Long id){
+    @GetMapping("/admin/playlists/{id}/")
+    public ResponseEntity<List<Song>> getPlaylistSongs(@PathVariable long id) {
         try {
 
             List<Song> songs = new ArrayList<>(playlistService.findAllPlaylistSongs(id));
@@ -206,6 +233,94 @@ public class AdminController {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/admin/addSongsToPlaylist/{id}")
+    public ResponseEntity<List<Song>> getSongsToAdd(@PathVariable long id) {
+        try {
+
+            List<Song> songs = songService.findAllSongs();
+            List<Song> songsToRemove = new ArrayList<>();
+
+            for (Song song : songs) {
+                for (Playlist playlist : song.getPlaylistSet()) {
+                    if (playlist.getId() == id) {
+                        songsToRemove.add(song);
+                    }
+                }
+            }
+
+            songs.removeAll(songsToRemove);
+
+            if (songs.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(songs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/admin/addSongsToPlaylist/{id}")
+    public PlaylistDto addSongToPlaylist(@PathVariable long id,
+                                      @RequestBody SongDto songDto) {
+        try {
+            Song song = convertSongToEntity(songDto);
+            Set<Playlist> playlistSet = song.getPlaylistSet();
+
+            return playlistService.findPlaylistById(id)
+                    .map(playlist -> {
+                        Set<Song> songs = playlist.getSongs();
+                        songs.add(song);
+                        playlist.setSongs(songs);
+                        playlistSet.add(playlist);
+                        song.setPlaylistSet(playlistSet);
+                        songService.updateSong(song);
+                        return convertToDto(playlistService.updatePlaylist(playlist));
+                    })
+                    .orElseGet(() -> {
+                        playlistService.findPlaylistById(id).get().setId(id);
+                        return convertToDto(playlistService.updatePlaylist(playlistService.findPlaylistById(id).get()));
+                    });
+        }catch (Exception e){
+            return null;
+        }
+    }
+
+    private PlaylistDto convertToDto(Playlist playlist) {
+        PlaylistDto playlistDto = modelMapper.map(playlist, PlaylistDto.class);
+        playlistDto.setId(playlist.getId());
+        playlistDto.setAuthor(playlist.getAuthor());
+        playlistDto.setGenre(playlist.getGenre());
+        playlistDto.setSubFee(playlist.getSubFee());
+        playlistDto.setTitle(playlist.getTitle());
+        return playlistDto;
+    }
+
+    private Playlist convertToEntity(PlaylistDto playlistDto) throws ParseException {
+        Playlist playlist = modelMapper.map(playlistDto, Playlist.class);
+        if(playlistDto.getId() != null){
+            playlist.setId(playlistDto.getId());
+            playlist.setAuthor(playlistDto.getAuthor());
+            playlist.setGenre(playlistDto.getGenre());
+            playlist.setSubFee(playlistDto.getSubFee());
+            playlist.setTitle(playlistDto.getTitle());
+            playlist.setSongs(playlistDto.getSongs());
+        }
+        return playlist;
+    }
+
+    private Song convertSongToEntity(SongDto songDto) throws ParseException {
+        Song song = modelMapper.map(songDto, Song.class);
+        if(songDto.getId() != null){
+            song.setId(songDto.getId());
+            song.setAuthor(songDto.getAuthor());
+            song.setName(songDto.getName());
+            song.setDuration(songDto.getDuration());
+            song.setPlaylistSet(songDto.getPlaylistSet());
+        }
+        return song;
     }
 }
 

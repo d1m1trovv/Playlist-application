@@ -3,13 +3,19 @@ import RequestsService from "../services/RequestsService";
 import EditIcon from "@material-ui/icons/Edit";
 import {Link} from "react-router-dom";
 
-const PlaylistSongs = (playlistId) => {
+const PlaylistSongs = props => {
     const [playlistsSongs, setPlaylistsSongs] = useState([]);
     const [currentPlaylist, setCurrentPlaylist] = useState(null);
 
     useEffect(() => {
-        RequestsService.getPlaylistSongs(playlistId).then(
+        getPlaylistById(props.match.params.id);
+        console.log(props.match.params.id);
+    }, [props.match.params.id]);
+
+    const getPlaylistSongs = id => {
+        RequestsService.getPlaylistSongs(id).then(
             (response) => {
+                console.log(props.match.params.id)
                 setPlaylistsSongs(response.data);
                 console.log(response.data);
             },
@@ -20,11 +26,24 @@ const PlaylistSongs = (playlistId) => {
                         error.response.data.message) ||
                     error.message ||
                     error.toString();
+                console.log(props.match.params.id)
 
                 setPlaylistsSongs(_playlistSongs);
             }
         );
-    }, [])
+    }
+
+    const getPlaylistById = id => {
+        RequestsService.findPlaylistById(id)
+            .then(response => {
+                setCurrentPlaylist(response.data);
+                getPlaylistSongs(currentPlaylist.id);
+                console.log(response.data);
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    };
 
     return (
         <section className="mainSec">
