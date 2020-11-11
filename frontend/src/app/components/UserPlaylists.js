@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {Link} from "react-router-dom";
 
 import RequestsService from "../services/RequestsService";
-import PlayCircleFilled from "@material-ui/icons/PlayCircleFilled";
-import PlaylistSongs from "./PlaylistSongs";
 import AuthenticationService from "../services/AuthenticationService";
 
 const UserPlaylists = (props) => {
