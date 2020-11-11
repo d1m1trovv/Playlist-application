@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -74,5 +75,15 @@ public class JWTAuthentication extends UsernamePasswordAuthenticationFilter {
                 .sign(HMAC512(SECRET.getBytes()));
 
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+        String isUserAdmin = " ";
+        boolean isAdmin = ((UserDetailsImpl) auth.getPrincipal())
+                .getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        if(isAdmin){
+            isUserAdmin = "true";
+        }
+        else{
+            isUserAdmin = "false";
+        }
+        res.addHeader("User-Role", isUserAdmin);
     }
 }

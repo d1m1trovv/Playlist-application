@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import RequestsService from "../services/RequestsService";
 import {Link} from "react-router-dom";
-import EditIcon from "@material-ui/icons/PlayCircleFilled";
+import EditIcon from "@material-ui/icons/Delete";
+import AuthenticationService from "../services/AuthenticationService";
 
 const Playlist = props => {
     const initialPlaylistState = {
@@ -31,6 +32,10 @@ const Playlist = props => {
 
     const handleAddButtonClick = () => {
         props.history.push("/api/admin/addSongsToPlaylist/" + currentPlaylist.id)
+    }
+
+    const handleDeleteButtonClick = () => {
+        props.history.push("/api/admin/deleteSongsFromPlaylist/" + currentPlaylist.id);
     }
 
     const getPlaylistSongs = id => {
@@ -64,6 +69,7 @@ const Playlist = props => {
         RequestsService.updatePlaylist(currentPlaylist.id, currentPlaylist)
             .then(response => {
                 console.log(response.data);
+                console.log(currentPlaylist.songs);
                 setMessage("The Playlist was updated successfully!");
                 setIsEditable(false);
                 props.history.push("/api/admin/playlists");
@@ -97,6 +103,16 @@ const Playlist = props => {
         setIsEditable(false);
     }
 
+    const handleDeleteSong = name => {
+        currentPlaylist.songs = currentPlaylist.songs.filter(song => song.name !== name);
+        console.log(currentPlaylist.songs);
+    }
+
+    const subscribeToPlaylist = (playlistId) => {
+        RequestsService.subscribe(playlistId).then(r =>
+            console.log(r.data));
+    }
+
     return (
         <div className="playlistSec">
             {currentPlaylist ? (
@@ -110,8 +126,19 @@ const Playlist = props => {
                                 <p>{currentPlaylist.genre}</p>
                                 <p>{currentPlaylist.subFee}</p>
                                 <br/>
-                                    <button onClick={onEditButtonClickTrue}>EDIT PLAYLIST</button>
-                            </div>
+                                {AuthenticationService.isUserAdmin() ? (
+                                    <div className="btn btn-one">
+                                    <span onClick={onEditButtonClickTrue}>EDIT PLAYLIST</span>
+                                    <span>SUBSCRIBE</span>
+                                    </div>
+                                    ) : <div
+                                    className="butn btn-one"
+                                    onClick={subscribeToPlaylist(currentPlaylist.id)}
+                                >
+                                    <span>SUBSCRIBE</span>
+                                </div>
+                                }
+                                </div>
                         </header>
 
                     </div>
@@ -166,7 +193,10 @@ const Playlist = props => {
                             <th>Name</th>
                             <th>Author</th>
                             <th>Duration</th>
+                            {isEditable ? (
                             <th>Action</th>
+                            ) : null
+                            }
                         </tr>
                         </thead>
                     </table>
@@ -174,15 +204,18 @@ const Playlist = props => {
                 <div className="tbl-content">
                 <table cellPadding="0" cellSpacing="0" border="0">
                 <tbody>
-                {currentPlaylistSongs &&
-                currentPlaylistSongs.map((song, index) => (
+                {currentPlaylist.songs &&
+                currentPlaylist.songs.map((song, index) => (
                     <tr>
                         <td>{song.name}</td>
                         <td>{song.author}</td>
                         <td>{song.duration}</td>
+                        {isEditable ? (
                         <td><EditIcon
+                            onClick={() => handleDeleteSong(song.name)}
                             key={index}
                         /></td>
+                            ) : null}
                     </tr>
                 ))}
                 </tbody>
@@ -192,6 +225,11 @@ const Playlist = props => {
                         className="butn btn-one"
                         onClick={handleAddButtonClick}>
                         <span>ADD NEW SONG</span>
+                    </div>
+                    <div
+                        className="butn btn-one"
+                        onClick={handleDeleteButtonClick}>
+                        <span>DELETE SONG</span>
                     </div>
                 </div>
             ) : (

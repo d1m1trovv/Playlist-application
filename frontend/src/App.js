@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {BrowserRouter as Router, Switch, Route, Link, Redirect} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
@@ -14,91 +14,64 @@ import Playlist from "./app/components/Playlist";
 import Playlists from "./app/components/Playlists";
 import AddPlaylist from "./app/components/AddPlaylist";
 import AddSong from "./app/components/AddSong";
-import Songs from "./app/components/Songs";
+import AddSongsToPlaylist from "./app/components/AddSongsToPlaylist";
 import Song from "./app/components/Song";
 import PlaylistSongs from "./app/components/PlaylistSongs";
+import DeleteSongsFromPlaylist from "./app/components/DeleteSongsFromPlaylist";
+import Songs from "./app/components/Songs";
+import PrivateRoute from "./app/components/PrivateRoute";
+import NavBar from "./app/components/NavBar";
+import AdminDashboard from "./app/components/AdminDashboard";
+import UserDashboard from "./app/components/UserDashboard";
+import HomeDashboard from "./app/components/HomeDashboard";
+import Profile from "./app/components/Profile";
+import UserPlaylists from "./app/components/UserPlaylists";
 
 
 const App = () => {
 
   const [showUsers, setShowUsers] = useState("");
   const [activeUser, setActiveUser] = useState(undefined);
+  const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState(false);
 
   useEffect(() => {
     const activeUser = AuthenticationService.getCurrentToken();
     setActiveUser(activeUser);
+    setIsCurrentUserAdmin(AuthenticationService.isUserAdmin());
+    console.log(isCurrentUserAdmin);
   }, []);
-
-  const logOut = () => {
-    AuthenticationService.logout();
-  };
 
   return (
       <Router>
-        <div>
-          <nav className="navbar navbar-expand-sm navbar-light">
-            <div className="navbar-nav mr-auto">
-              <li className="nav-item">
-                <Link to={"/api/home"} className="nav-link">
-                  Home
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to={"/api/admin/users"} className="nav-link">
-                  Users
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to={"/api/admin/playlists"} className="nav-link">
-                  Playlists
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to={"/api/admin/addSong"} className="nav-link">
-                  Songs
-                </Link>
-              </li>
-                </div>
-
-            {activeUser ? (
-                <div className="navbar-nav ml-auto">
-                  <li className="nav-item">
-                    <a href="/" className="nav-link" onClick={logOut}>
-                      LogOut
-                    </a>
-                  </li>
-                </div>
-            ) : (
-                <div className="navbar-nav ml-auto">
-                  <li className="nav-item">
-                    <Link to={"/api/login"} className="nav-link">
-                      Login
-                    </Link>
-                  </li>
-
-                  <li className="nav-item">
-                    <Link to={"/api/register"} className="nav-link">
-                      Sign Up
-                    </Link>
-                  </li>
-                </div>
-            )}
-          </nav>
+          <div>
+              {activeUser ? (
+                  <div>
+                    {isCurrentUserAdmin ? (
+                        <AdminDashboard/>
+                    ):(
+                        <UserDashboard/>
+                    )}
+                  </div>
+              ) : (
+                    <HomeDashboard/>
+              )}
 
           <div className="container-fluid">
             <Switch>
               <Route exact path="/api/login" component={Login} />
               <Route exact path="/api/register" component={Register} />
               <Route exact path="/api/admin/users" component={Users} />
-              <Route exact path="/api/admin/playlists" component={Playlists} />
-              <Route exact path="/api/admin/songs" component={PlaylistSongs} />
-              <Route path="/api/admin/playlists/:id" component={Playlist} />
-              <Route path="/api/admin/songs/:id" component={Song} />
+              <Route exact path="/api/user/playlists" component={Playlists} />
+              <Route exact path="/api/admin/songs" component={Songs} />
+              <Route path="/api/profile" component={Profile} />
+              <Route path="/api/user/playlists/:id" component={Playlist} />
               <Route path="/api/admin/users/:id" component={User} />
               <Route path="/api/admin/addPlaylist" component={AddPlaylist}/>
-              <Route exact path="/api/admin/addSong" component={AddSong}/>
-              <Route path="/api/admin/playlists/:id" component={PlaylistSongs}/>
-              <Route path="/api/admin/addSongsToPlaylist/:id" component={Songs}/>
+              <Route path="/api/admin/songs/addSong" component={AddSong}/>
+              <Route path="/api/user/subscriptions" component={UserPlaylists}/>
+              {/*<Route path="/api/admin/playlists/:id" component={PlaylistSongs}/>*/}
+              <Route path="/api/admin/addSongsToPlaylist/:id" component={AddSongsToPlaylist}/>
+              <Route path="/api/admin/deleteSongsFromPlaylist/:id" component={DeleteSongsFromPlaylist}/>
             </Switch>
           </div>
         </div>

@@ -1,5 +1,6 @@
 package webprogramming.playlistapp.services;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,11 @@ import webprogramming.playlistapp.repositories.SongRepository;
 import webprogramming.playlistapp.repositories.UserRepository;
 
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service("playlistService")
 public class PlaylistServiceImpl implements PlaylistService{
@@ -23,14 +26,20 @@ public class PlaylistServiceImpl implements PlaylistService{
     private final PlaylistRepository playlistRepository;
     private final UserRepository userRepository;
     private final SongRepository songRepository;
+    private final ModelMapper modelMapper;
+    private final SongServiceImpl songService;
 
     @Autowired
     public PlaylistServiceImpl(@Qualifier("playlistRepository") PlaylistRepository playlistRepository,
                                @Qualifier("userRepository") UserRepository userRepository,
-                               @Qualifier("songRepository") SongRepository songRepository){
+                               @Qualifier("songRepository") SongRepository songRepository,
+                               @Qualifier("modelMapper") ModelMapper modelMapper,
+                               @Qualifier("songService") SongServiceImpl songService){
         this.playlistRepository = playlistRepository;
         this.userRepository = userRepository;
         this.songRepository = songRepository;
+        this.modelMapper = modelMapper;
+        this.songService = songService;
     }
 
     @Override
@@ -85,6 +94,48 @@ public class PlaylistServiceImpl implements PlaylistService{
 
         return playlist != null;
     }
+
+    @Override
+    public PlaylistDto convertPlaylistToDto(Playlist playlist) {
+        PlaylistDto playlistDto = modelMapper.map(playlist, PlaylistDto.class);
+        playlistDto.setId(playlist.getId());
+        playlistDto.setAuthor(playlist.getAuthor());
+        playlistDto.setGenre(playlist.getGenre());
+        playlistDto.setSubFee(playlist.getSubFee());
+        playlistDto.setTitle(playlist.getTitle());
+        return playlistDto;
+    }
+
+    @Override
+    public Playlist convertPlaylistDtoToEntity(PlaylistDto playlistDto) throws ParseException {
+        Playlist playlist = modelMapper.map(playlistDto, Playlist.class);
+        if(playlistDto.getId() != null){
+            playlist.setId(playlistDto.getId());
+            playlist.setAuthor(playlistDto.getAuthor());
+            playlist.setGenre(playlistDto.getGenre());
+            playlist.setSubFee(playlistDto.getSubFee());
+            playlist.setTitle(playlistDto.getTitle());
+            playlist.setSongs(convertPlaylistDtoSetToEntity(playlistDto.getSongs()));
+        }
+        return playlist;
+    }
+
+    @Override
+    public Set<Song> convertPlaylistDtoSetToEntity(Set<SongDto> songsDto) throws ParseException {
+
+        Set<Song> songSet = songsDto.stream()
+                .map(songDto -> {
+                    try {
+                        return songService.convertSongDtoToEntity(songDto);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
+                .collect(Collectors.toSet());
+        return songSet;
+    }
+
 
     @Override
     public Playlist updatePlaylist(Playlist playlist) {

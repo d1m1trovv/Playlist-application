@@ -27,14 +27,14 @@ const deleteUser = (id) => {
 }
 
 const getPlaylists = () => {
-    return axios.get(Constants.BASE_URL + `admin/playlists`, {headers: authHeader()});
+    return axios.get(Constants.BASE_URL + `user/playlists`, {headers: authHeader()});
 }
 const getPlaylistByTitle = (title) => {
     return axios.get(Constants.BASE_URL + `admin/playlists/${title}`, {headers: authHeader()});
 }
 
 const findPlaylistById = id => {
-    return axios.get(Constants.BASE_URL + `admin/playlists/${id}`, {headers: authHeader()});
+    return axios.get(Constants.BASE_URL + `user/playlists/${id}`, {headers: authHeader()});
 }
 
 const updatePlaylist = (id, data) => {
@@ -71,7 +71,38 @@ const getSongsToAdd = id => {
 const addSongToPlaylistBySongId = (id, song) => {
     return axios.put(Constants.BASE_URL + `admin/addSongsToPlaylist/${id}`, song, {headers: authHeader()})
 }
+
+const getSongsToDelete = id => {
+    return axios.get(Constants.BASE_URL + `admin/deleteSongsFromPlaylist/${id}`, {headers: authHeader()})
+}
+
+const deleteSongFromPlaylist = (id, song) => {
+    return axios.put(Constants.BASE_URL + `admin/deleteSongsFromPlaylist/${id}`, song, {headers: authHeader()})
+}
+
+const getSongs = () => {
+    return axios.get(Constants.BASE_URL + `admin/songs`, {headers: authHeader()})
+}
+
+const getUser = (data) => {
+    return axios.get(Constants.BASE_URL + `${data}`,  {headers:authHeader()})
+}
+
+const subscribe = id => {
+    return axios.put(Constants.BASE_URL + `user/playlists/${id}`, null, {headers: authHeader()})
+}
+
+const getUserSubscriptions = () => {
+    return axios.get(Constants.BASE_URL + `user/subscriptions`, {headers: authHeader()})
+}
+
 export default {
+    getUserSubscriptions,
+    subscribe,
+    getUser,
+    getSongs,
+    getSongsToDelete,
+    deleteSongFromPlaylist,
     addSongToPlaylistBySongId,
     getSongsToAdd,
     getPlaylistSongs,

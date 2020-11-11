@@ -6,6 +6,7 @@ import webprogramming.playlistapp.dtos.SongDto;
 import webprogramming.playlistapp.entities.Playlist;
 import webprogramming.playlistapp.entities.Song;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,4 +22,8 @@ public interface PlaylistService {
     boolean checkIfPlaylistExists(String title);
     Playlist updatePlaylist(Playlist playlist);
     void deletePlaylist(long id);
+    PlaylistDto convertPlaylistToDto(Playlist playlist);
+    Playlist convertPlaylistDtoToEntity(PlaylistDto playlistDto) throws ParseException;
+    Set<Song> convertPlaylistDtoSetToEntity(Set<SongDto> songDtoSet) throws ParseException;
+
 }

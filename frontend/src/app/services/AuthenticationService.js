@@ -19,11 +19,19 @@ const login = (username, password) => {
         .then((response) => {
 
             let token = response.headers['authorization']
+            let role = response.headers['user-role']
             localStorage.setItem("token", token);
+            localStorage.setItem("role", role);
             console.log(token);
+            console.log(response.data);
 
         });
 };
+
+const isUserAdmin = () => {
+    let userRole = localStorage.getItem('role');
+    return userRole === "true";
+}
 
 const getCurrentToken = () => {
     return localStorage.getItem('token');
@@ -39,4 +47,5 @@ export default {
     login,
     logout,
     getCurrentToken,
+    isUserAdmin
 };

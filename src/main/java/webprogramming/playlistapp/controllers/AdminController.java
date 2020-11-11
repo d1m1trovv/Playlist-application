@@ -1,9 +1,13 @@
 package webprogramming.playlistapp.controllers;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import webprogramming.playlistapp.dtos.PlaylistDto;
 import webprogramming.playlistapp.dtos.SongDto;
@@ -13,20 +17,27 @@ import webprogramming.playlistapp.entities.Song;
 import webprogramming.playlistapp.entities.User;
 import webprogramming.playlistapp.services.PlaylistServiceImpl;
 import webprogramming.playlistapp.services.SongServiceImpl;
+import webprogramming.playlistapp.services.UserDetailsImpl;
 import webprogramming.playlistapp.services.UserServiceImpl;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.validation.Valid;
+import java.io.*;
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api")
 public class AdminController {
+
+    private String keyString = "adkj@#$02#@adflkj)(*jlj@#$#@LKjasdjlkj<.,mo@#$@#kljlkdsu343";
 
     private final
     UserServiceImpl userService;
@@ -49,6 +60,16 @@ public class AdminController {
         this.modelMapper = modelMapper;
     }
 
+    @PostMapping(value = "/login")
+    public ResponseEntity<?> userLogin(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(roles, HttpStatus.OK);
+    }
+
     @PostMapping(value = "/register")
     public ResponseEntity<?> Register(@Valid @RequestBody UserDto userDto) {
         try {
@@ -61,46 +82,10 @@ public class AdminController {
         }
     }
 
-    @GetMapping(value = "/admin/playlists")
-    public ResponseEntity<List<PlaylistDto>> allPlaylists() {
-        try {
-
-            List<PlaylistDto> playlistsDto =
-                    playlistService.findAll().stream()
-                    .map(this::convertToDto)
-                    .collect(Collectors.toList());
-
-            if (playlistsDto.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(playlistsDto, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @GetMapping("/admin/playlists/{id}")
-    public ResponseEntity<PlaylistDto> getPlaylistById(@PathVariable("id") long id) {
-        try {
-            Playlist playlist = playlistService.findPlaylistById(id).get();
-
-            PlaylistDto playlistDto = convertToDto(playlist);
-
-            //return playlistDto.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-            //      .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-            return new ResponseEntity<>(playlistDto, HttpStatus.OK);
-        }
-        catch(Exception e){
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @PutMapping("/admin/playlists/{id}")
     public PlaylistDto updatePlaylist(@PathVariable("id") long id, @RequestBody PlaylistDto playlistDto) {
         try {
-            Playlist tempPl = convertToEntity(playlistDto);
+            Playlist tempPl = playlistService.convertPlaylistDtoToEntity(playlistDto);
 
             return playlistService.findPlaylistById(id)
                     .map(playlist -> {
@@ -108,12 +93,17 @@ public class AdminController {
                         playlist.setAuthor(playlistDto.getAuthor());
                         playlist.setGenre(playlistDto.getGenre());
                         playlist.setSubFee(playlistDto.getSubFee());
+                        try {
+                            playlist.setSongs(playlistService.convertPlaylistDtoSetToEntity(playlistDto.getSongs()));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
                         playlistService.updatePlaylist(playlist);
-                        return convertToDto(playlist);
+                        return playlistService.convertPlaylistToDto(playlist);
                     })
                     .orElseGet(() -> {
                         playlistDto.setId(id);
-                        return convertToDto(playlistService.updatePlaylist(tempPl));
+                        return playlistService.convertPlaylistToDto(playlistService.updatePlaylist(tempPl));
                     });
         }catch (Exception e){
             return null;
@@ -223,6 +213,10 @@ public class AdminController {
     public ResponseEntity<List<Song>> getPlaylistSongs(@PathVariable long id) {
         try {
 
+            Map<String,String> map = new HashMap<String,String>();
+            map.put("id",String.valueOf(id));
+            map.put("topSecret","Waffles are tasty");
+
             List<Song> songs = new ArrayList<>(playlistService.findAllPlaylistSongs(id));
 
             if (songs.isEmpty()) {
@@ -266,7 +260,7 @@ public class AdminController {
     public PlaylistDto addSongToPlaylist(@PathVariable long id,
                                       @RequestBody SongDto songDto) {
         try {
-            Song song = convertSongToEntity(songDto);
+            Song song = songService.convertSongDtoToEntity(songDto);
             Set<Playlist> playlistSet = song.getPlaylistSet();
 
             return playlistService.findPlaylistById(id)
@@ -277,52 +271,152 @@ public class AdminController {
                         playlistSet.add(playlist);
                         song.setPlaylistSet(playlistSet);
                         songService.updateSong(song);
-                        return convertToDto(playlistService.updatePlaylist(playlist));
+                        return playlistService.convertPlaylistToDto(playlistService.updatePlaylist(playlist));
                     })
                     .orElseGet(() -> {
                         playlistService.findPlaylistById(id).get().setId(id);
-                        return convertToDto(playlistService.updatePlaylist(playlistService.findPlaylistById(id).get()));
+                        return playlistService.convertPlaylistToDto(playlistService.updatePlaylist(playlistService.findPlaylistById(id).get()));
                     });
         }catch (Exception e){
             return null;
         }
     }
 
-    private PlaylistDto convertToDto(Playlist playlist) {
-        PlaylistDto playlistDto = modelMapper.map(playlist, PlaylistDto.class);
-        playlistDto.setId(playlist.getId());
-        playlistDto.setAuthor(playlist.getAuthor());
-        playlistDto.setGenre(playlist.getGenre());
-        playlistDto.setSubFee(playlist.getSubFee());
-        playlistDto.setTitle(playlist.getTitle());
-        return playlistDto;
+    @GetMapping("/admin/deleteSongsFromPlaylist/{id}")
+    public ResponseEntity<List<SongDto>> getSongsToDelete(@PathVariable long id){
+        try {
+
+           List<SongDto> songDtos = new ArrayList<>();
+
+           for(Song song : playlistService.findPlaylistById(id).get().getSongs()){
+               SongDto songDto = songService.convertSongToDto(song);
+               songDtos.add(songDto);
+           }
+
+            if (songDtos.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(songDtos, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    private Playlist convertToEntity(PlaylistDto playlistDto) throws ParseException {
-        Playlist playlist = modelMapper.map(playlistDto, Playlist.class);
-        if(playlistDto.getId() != null){
-            playlist.setId(playlistDto.getId());
-            playlist.setAuthor(playlistDto.getAuthor());
-            playlist.setGenre(playlistDto.getGenre());
-            playlist.setSubFee(playlistDto.getSubFee());
-            playlist.setTitle(playlistDto.getTitle());
-            playlist.setSongs(playlistDto.getSongs());
+    @PutMapping("/admin/deleteSongsFromPlaylist/{id}")
+    public PlaylistDto deleteSongFromPlaylist(@PathVariable long id,
+                                              @RequestBody SongDto songDto){
+        try {
+            Song song = songService.convertSongDtoToEntity(songDto);
+            Set<Playlist> playlistSet = song.getPlaylistSet();
+
+            return playlistService.findPlaylistById(id)
+                    .map(playlist -> {
+                        Set<Song> songs = playlist.getSongs();
+                        songs.remove(song);
+                        playlist.setSongs(songs);
+                        playlistSet.remove(playlist);
+                        song.setPlaylistSet(playlistSet);
+                        songService.updateSong(song);
+                        return playlistService.convertPlaylistToDto(playlistService.updatePlaylist(playlist));
+                    })
+                    .orElseGet(() -> {
+                        playlistService.findPlaylistById(id).get().setId(id);
+                        return playlistService.convertPlaylistToDto(playlistService.updatePlaylist(playlistService.findPlaylistById(id).get()));
+                    });
+        }catch (Exception e){
+            return null;
         }
-        return playlist;
+    }
+    /**
+     * Encrypts and encodes the Object and IV for url inclusion
+     * @param
+     * @return
+     * @throws Exception
+     */
+    private String[] encryptObject(Object obj) throws Exception {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        ObjectOutput out = new ObjectOutputStream(stream);
+        try {
+            // Serialize the object
+            out.writeObject(obj);
+            byte[] serialized = stream.toByteArray();
+
+            // Setup the cipher and Init Vector
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            byte[] iv = new byte[cipher.getBlockSize()];
+            new SecureRandom().nextBytes(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+            // Hash the key with SHA-256 and trim the output to 128-bit for the key
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(keyString.getBytes());
+            byte[] key = new byte[16];
+            System.arraycopy(digest.digest(), 0, key, 0, key.length);
+            SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+
+            // encrypt
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+
+            // Encrypt & Encode the input
+            byte[] encrypted = cipher.doFinal(serialized);
+            byte[] base64Encoded = Base64.encodeBase64(encrypted);
+            String base64String = new String(base64Encoded);
+            String urlEncodedData = URLEncoder.encode(base64String,"UTF-8");
+
+            // Encode the Init Vector
+            byte[] base64IV = Base64.encodeBase64(iv);
+            String base64IVString = new String(base64IV);
+            String urlEncodedIV = URLEncoder.encode(base64IVString, "UTF-8");
+
+            return new String[] {urlEncodedData, urlEncodedIV};
+        }finally {
+            stream.close();
+            out.close();
+        }
     }
 
-    private Song convertSongToEntity(SongDto songDto) throws ParseException {
-        Song song = modelMapper.map(songDto, Song.class);
-        if(songDto.getId() != null){
-            song.setId(songDto.getId());
-            song.setAuthor(songDto.getAuthor());
-            song.setName(songDto.getName());
-            song.setDuration(songDto.getDuration());
-            song.setPlaylistSet(songDto.getPlaylistSet());
+    /**
+     * Decrypts the String and serializes the object
+     * @param base64Data
+     * @param base64IV
+     * @return
+     * @throws Exception
+     */
+    public Object decryptObject(String base64Data, String base64IV) throws Exception {
+        // Decode the data
+        byte[] encryptedData = Base64.decodeBase64(base64Data.getBytes());
+
+        // Decode the Init Vector
+        byte[] rawIV = Base64.decodeBase64(base64IV.getBytes());
+
+        // Configure the Cipher
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        IvParameterSpec ivSpec = new IvParameterSpec(rawIV);
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        digest.update(keyString.getBytes());
+        byte[] key = new byte[16];
+        System.arraycopy(digest.digest(), 0, key, 0, key.length);
+        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+
+        // Decrypt the data..
+        byte[] decrypted = cipher.doFinal(encryptedData);
+
+        // Deserialize the object
+        ByteArrayInputStream stream = new ByteArrayInputStream(decrypted);
+        ObjectInput in = new ObjectInputStream(stream);
+        Object obj = null;
+        try {
+            obj = in.readObject();
+        }finally {
+            stream.close();
+            in.close();
         }
-        return song;
+        return obj;
     }
 }
+
 
 
 

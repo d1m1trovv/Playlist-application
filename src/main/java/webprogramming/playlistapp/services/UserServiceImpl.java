@@ -1,13 +1,16 @@
 package webprogramming.playlistapp.services;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import webprogramming.playlistapp.dtos.PlaylistDto;
 import webprogramming.playlistapp.dtos.UserDto;
 import webprogramming.playlistapp.entities.*;
 import webprogramming.playlistapp.repositories.*;
 
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -15,7 +18,7 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
 
     private final PlaylistServiceImpl playlistService;
-
+    private final ModelMapper modelMapper;
     private final SubscriptionRepository subscriptionRepository;
     private final PlaylistRepository playlistRepository;
     private final InvoiceRepository invoiceRepository;
@@ -32,7 +35,8 @@ public class UserServiceImpl implements UserService {
                            @Qualifier("songRepository") SongRepository songRepository,
                            @Qualifier("userRepository") UserRepository userRepository,
                            @Qualifier("playlistService") PlaylistServiceImpl playlistService,
-                           @Qualifier("bCryptPasswordEncoder") BCryptPasswordEncoder bCryptPasswordEncoder) {
+                           @Qualifier("bCryptPasswordEncoder") BCryptPasswordEncoder bCryptPasswordEncoder,
+                           @Qualifier("modelMapper") ModelMapper modelMapper) {
         this.invoiceRepository = invoiceRepository;
         this.playlistRepository = playlistRepository;
         this.subscriptionRepository = subscriptionRepository;
@@ -41,6 +45,7 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
         this.playlistService = playlistService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -51,7 +56,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(userDto.getUsername());
         user.setIsActive(1);
         user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-        Role userRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         roles.add(userRole);
         user.setRoles(roles);
@@ -161,6 +166,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User user) {
         return userRepository.save(user);
+    }
+
+    @Override
+    public UserDto convertUserToDto(User user) {
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        userDto.setId(user.getId());
+        userDto.setEmail(user.getEmail());
+        userDto.setPlaylists(user.getUserPlaylists());
+        userDto.setUsername(user.getUsername());
+        return userDto;
+    }
+
+    @Override
+    public User convertUserDtoToEntity(UserDto userDto) throws ParseException {
+        User user = modelMapper.map(userDto, User.class);
+        if(userDto.getId() != null){
+            user.setId(userDto.getId());
+            user.setUsername(userDto.getUsername());
+            user.setEmail(userDto.getEmail());
+            user.setPassword(userDto.getPassword());
+            user.setUserPlaylists(userDto.getPlaylists());
+        }
+        return user;
     }
 
 }

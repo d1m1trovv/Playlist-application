@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import webprogramming.playlistapp.dtos.UserDto;
 import webprogramming.playlistapp.entities.*;
 
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -28,5 +29,7 @@ public interface UserService {
     void deleteUser(long id);
     Optional<User> findUserById(long id);
     User updateUser(User user);
+    User convertUserDtoToEntity(UserDto userDto) throws ParseException;
+    UserDto convertUserToDto(User user);
 
 }

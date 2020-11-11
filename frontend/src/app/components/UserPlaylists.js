@@ -6,14 +6,14 @@ import PlayCircleFilled from "@material-ui/icons/PlayCircleFilled";
 import PlaylistSongs from "./PlaylistSongs";
 import AuthenticationService from "../services/AuthenticationService";
 
-const Playlists = (props) => {
+const UserPlaylists = (props) => {
     const [playlists, setPlaylists] = useState([]);
     const [currentPlaylist, setCurrentPlaylist] = useState(null);
     const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(-1);
     const [currentPlaylistTitle, setCurrentPlaylistTitle] = useState("");
 
     useEffect(() => {
-        RequestsService.getPlaylists().then(
+        RequestsService.getUserSubscriptions().then(
             (response) => {
                 setPlaylists(response.data);
                 console.log(response.data);
@@ -116,11 +116,11 @@ const Playlists = (props) => {
                 </div>
             </div>
             {AuthenticationService.isUserAdmin() ? (
-            <div className="butn btn-one">
-                <span>CREATE NEW PLAYLIST</span>
-            </div> ) :null}
+                <div className="butn btn-one">
+                    <span>CREATE NEW PLAYLIST</span>
+                </div> ) :null}
         </section>
     )
 
 }
-export default Playlists;
+export default UserPlaylists;

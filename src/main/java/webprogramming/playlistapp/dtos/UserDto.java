@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import webprogramming.playlistapp.entities.Playlist;
 import webprogramming.playlistapp.entities.Role;
 import webprogramming.playlistapp.validations.FieldMatch;
 import webprogramming.playlistapp.validations.ValidEmail;
@@ -19,6 +20,10 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldMatch(first = "pass", second = "confirmPass", message = "Passwords must match")
 public class UserDto {
+
+    @NotNull
+    @NotEmpty
+    private Long id;
 
     @ValidEmail
     @NotEmpty
@@ -38,5 +43,9 @@ public class UserDto {
     @NotEmpty
     @NotNull
     private String confirmPassword;
+
+    @NotEmpty
+    @NotNull
+    private Set<Playlist> playlists;
 }
 

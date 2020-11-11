@@ -16,8 +16,7 @@ import java.util.Set;
 @Entity
 @Table(name = "playlist")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
-        property  = "title",
-        scope     = Playlist.class)
+        property  = "id")
 public class Playlist {
 
     @Id
@@ -47,6 +46,9 @@ public class Playlist {
             inverseJoinColumns = @JoinColumn(name = "song_id"))
     private Set<Song> songs = new HashSet<>();
 
+    @ManyToMany(mappedBy = "userPlaylists", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<User> userSet = new HashSet<>();
+
     @OneToMany(mappedBy = "playlist")
     Set<Subscription> subscriptions;
 
@@ -75,7 +77,7 @@ public class Playlist {
 
     public Playlist(long id, String title, String author,
                     String genre, String subFee, Set<Song> songs,
-                    Set<Subscription> subscriptions){
+                    Set<Subscription> subscriptions, Set<User> users){
         this.id = id;
         this.title = title;
         this.author = author;
@@ -83,6 +85,15 @@ public class Playlist {
         this.songs = songs;
         this.subFee = subFee;
         this.subscriptions = subscriptions;
+        this.userSet = users;
+    }
+
+    public Set<User> getUserSet() {
+        return userSet;
+    }
+
+    public void setUserSet(Set<User> userSet) {
+        this.userSet = userSet;
     }
 
     public long getId() {

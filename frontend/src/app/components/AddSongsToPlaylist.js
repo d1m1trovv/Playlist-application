@@ -2,54 +2,66 @@ import React, { useState, useEffect } from "react";
 import {Link} from "react-router-dom";
 
 import RequestsService from "../services/RequestsService";
-import PlayCircleFilled from "@material-ui/icons/PlayCircleFilled";
-import PlaylistSongs from "./PlaylistSongs";
-import AuthenticationService from "../services/AuthenticationService";
+import AddIcon from "@material-ui/icons/Add";
 
-const Playlists = (props) => {
-    const [playlists, setPlaylists] = useState([]);
-    const [currentPlaylist, setCurrentPlaylist] = useState(null);
-    const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(-1);
+const AddSongsToPlaylist = (props) => {
+
+    const initialSongState = {
+        id: null,
+        name: "",
+        author: "",
+        duration: ""
+    };
+
+    const [songs, setSongs] = useState([]);
+    const [currentSong, setCurrentSong] = useState(initialSongState);
+    const [currentSongIndex, setCurrentSongIndex] = useState(-1);
     const [currentPlaylistTitle, setCurrentPlaylistTitle] = useState("");
+    const [showPopUp, setShowPopUp] = useState(false);
 
     useEffect(() => {
-        RequestsService.getPlaylists().then(
+        RequestsService.getSongsToAdd(props.match.params.id).then(
             (response) => {
-                setPlaylists(response.data);
+                setSongs(response.data);
                 console.log(response.data);
             },
             (error) => {
-                const _playlists =
+                const _songs =
                     (error.response &&
                         error.response.data &&
                         error.response.data.message) ||
                     error.message ||
                     error.toString();
 
-                setPlaylists(_playlists);
+                setSongs(_songs);
             }
         );
     }, [])
 
-    const setEditablePlaylist = (playlist, index) => {
-        setCurrentPlaylist(playlist);
-        setCurrentPlaylistIndex(index);
-        props.history.push("/api/user/playlists/" + playlist.id)
-        console.log("Playlist: " + playlist.title);
+    const showPopUpOnClick = () =>{
+        setShowPopUp(true);
     }
 
-    const getPlaylistByTitle = () => {
-        RequestsService.findByEmail(currentPlaylistTitle)
+    const putSongInPlaylist = (song) => {
+        RequestsService.addSongToPlaylistBySongId(props.match.params.id, song)
             .then(response => {
-                setPlaylists(response.data);
                 console.log(response.data);
+                props.history.push("/api/admin/playlists/" + props.match.params.id);
+                console.log(song);
             })
             .catch(e => {
                 console.log(e);
+                console.log("Current song: " + currentSong);
             });
-    };
+    }
 
-    const handleChangeTitle = (e) => {
+    const setEditableSong = (song, index) => {
+        setCurrentSong(song);
+        setCurrentSongIndex(index);
+        showPopUpOnClick();
+    }
+
+    const handleChangeName = (e) => {
         const currentPlaylistTitle = e.target.value;
         setCurrentPlaylistTitle(currentPlaylistTitle);
     }
@@ -57,36 +69,33 @@ const Playlists = (props) => {
     return (
         <section className="mainSec">
             <div>
-                <h1>Playlists</h1>
-                <div className="col-md-0">
-                    <div className="input-group mt-5">
+                <div className="col-md-8">
+                    <div className="input-group mb-3">
                         <input
                             type="text"
                             className="form-control"
                             placeholder="Search by title"
                             value={currentPlaylistTitle}
-                            onChange={handleChangeTitle}
+                            onChange={handleChangeName}
                         />
                         <div className="input-group-append">
                             <button
-                                className="btn btn-one"
+                                className="btn btn-outline-secondary"
                                 type="button"
-                                onClick={getPlaylistByTitle}
                             >
                                 Search
                             </button>
                         </div>
                     </div>
                 </div>
+                <h1>SELECT SONGS TO ADD..</h1>
                 <div className="tbl-header">
                     <table cellPadding="0" cellSpacing="0" border="0">
                         <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Title</th>
+                            <th>Name</th>
                             <th>Author</th>
-                            <th>Genre</th>
-                            <th>Subscribe price</th>
+                            <th>Duration</th>
                             <th>Action</th>
                         </tr>
                         </thead>
@@ -95,32 +104,32 @@ const Playlists = (props) => {
                 <div className="tbl-content">
                     <table cellPadding="0" cellSpacing="0" border="0">
                         <tbody>
-                        {playlists &&
-                        playlists.map((playlist, index) => (
+                        {songs &&
+                        songs.map((song, index) => (
                             <tr
-                                onClick={() => setEditablePlaylist(playlist, index)}
+                                onClick={() => setEditableSong(song, index)}
                                 key={index}
                             >
-                                <td>{index + 1}</td>
-                                <td>{playlist.title}</td>
-                                <td>{playlist.author}</td>
-                                <td>{playlist.genre}</td>
-                                <td>{playlist.subFee}</td>
-                                <td><button className="btn btn-one">
-                                    <span>SUBSCRIBE</span>
-                                </button></td>
+                                <td>{song.name}</td>
+                                <td>{song.author}</td>
+                                <td>{song.duration}</td>
+                                <td>{showPopUp && currentSongIndex === index ?
+                                <AddIcon
+                                    onClick={() => putSongInPlaylist(song)}
+                                />
+                                    : null
+                                }</td>
                             </tr>
                         ))}
                         </tbody>
                     </table>
                 </div>
             </div>
-            {AuthenticationService.isUserAdmin() ? (
             <div className="butn btn-one">
                 <span>CREATE NEW PLAYLIST</span>
-            </div> ) :null}
+            </div>
         </section>
     )
 
 }
-export default Playlists;
+export default AddSongsToPlaylist;

@@ -15,8 +15,7 @@ import java.util.Set;
 @Entity
 @Table(name = "song")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
-        property  = "name",
-        scope     = Song.class)
+        property  = "id")
 public class Song {
 
     @Id

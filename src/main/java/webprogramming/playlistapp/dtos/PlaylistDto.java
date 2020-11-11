@@ -37,6 +37,6 @@ public class PlaylistDto {
 
     @NotNull
     @NotEmpty
-    private Set<Song> songs;
+    private Set<SongDto> songs;
 
 }
