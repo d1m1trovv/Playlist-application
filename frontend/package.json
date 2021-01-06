@@ -39,7 +39,7 @@
     ]
   },
   "devDependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "react-hook-form": "^5.7.2",
     "react-validation": "^3.0.7",
     "validator": "^13.1.17"
